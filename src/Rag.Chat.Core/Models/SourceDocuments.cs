@@ -1,4 +1,4 @@
-﻿namespace Rag.Chat.Web.Models;
+﻿namespace Rag.Chat.Core.Models;
 
 public class SourceDocuments
 {

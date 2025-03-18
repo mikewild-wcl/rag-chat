@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace ChatSample.Pages;
+namespace Rag.Chat.Web.Pages;
 
 public class IndexModel : PageModel
 {

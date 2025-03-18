@@ -1,6 +1,6 @@
-using ChatSample.Models;
+using Rag.Chat.Core.Models;
 
-namespace ChatSample.Services;
+namespace Rag.Chat.Core.Services.Interfaces;
 
 public interface IAiService
 {

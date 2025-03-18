@@ -3,17 +3,19 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ChatSample</title>
+    <title>@ViewData["Title"] - ChatBot</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ChatSample.styles.css" asp-append-version="true" />
+    @* <link rel="stylesheet" href="~/ChatSample.styles.css" asp-append-version="true" /> *@
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">ChatSample</a>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">ChatBot</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -40,12 +42,33 @@
                 <input type="text" id="chat-input" placeholder="Type a message..." />
                 <button id="send-button">Send</button>
             </div>
+
+            <button class="chatbot-toggler">
+                <span class="material-symbols-rounded">mode_comment</span>
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <div class="chatbot">
+                <header>
+                    <h2>Chatbot</h2>
+                    <span class="close-btn material-symbols-outlined">close</span>
+                </header>
+                <ul class="chatbox">
+                    <li class="chat incoming">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                        <p>Hi there 👋<br>How can I help you today?</p>
+                    </li>
+                </ul>
+                <div class="chat-input">
+                    <textarea placeholder="Enter a message..." spellcheck="false" required></textarea>
+                    <span id="send-btn" class="material-symbols-rounded">send</span>
+                </div>
+            </div>
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - ChatSample - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2025 - ChatBot - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>
 

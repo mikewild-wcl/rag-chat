@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\Interfaces\" />
+    <ProjectReference Include="..\Rag.Chat.Core\Rag.Chat.Core.csproj" />
   </ItemGroup>
 
 </Project>
