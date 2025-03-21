@@ -1,5 +1,9 @@
-﻿namespace Rag.Chat.Core.Models;
+﻿using System.ComponentModel;
 
-public record ChatMessage(string Message)
+namespace Rag.Chat.Core.Models;
+
+public record ChatMessage(
+    [Description("Chat prompt message string.")]
+    string Message)
 {
 }

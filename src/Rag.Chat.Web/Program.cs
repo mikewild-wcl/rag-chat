@@ -5,6 +5,8 @@ using Microsoft.Extensions.Options;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services;
 using Rag.Chat.Core.Services.Interfaces;
+using Scalar.AspNetCore;
+using System.ComponentModel;
 using System.Threading.RateLimiting;
 
 const string ApiRateLimitPolicy = "api";
@@ -25,10 +27,12 @@ builder.Services
             options.QueueLimit = rateLimitOptions.QueueLimit;
         }));
 
-// Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddSingleton<IAiService, AiService>();
-builder.Services.AddSingleton<IChatClient>(sp =>
+builder.Services.AddOpenApi();
+
+builder.Services
+    .AddSingleton<IAiService, AiService>()
+    .AddSingleton<IChatClient>(sp =>
 {
     var options = sp.GetRequiredService<IOptions<ApiOptions>>().Value;
 
@@ -37,15 +41,17 @@ builder.Services.AddSingleton<IChatClient>(sp =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
+else
 {
     app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
-// static string GetTicks() => (DateTime.Now.Ticks & 0x11111).ToString("00000");
 
 app.UseHttpsRedirection();
 
@@ -59,11 +65,17 @@ app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
 
-app.MapPost("/api/chat", async ([FromBody] Rag.Chat.Core.Models.ChatMessage message, IAiService aiService) =>
+app.MapPost("/api/chat", 
+    async (
+        [Description("Chat prompt message.")]
+        [FromBody] Rag.Chat.Core.Models.ChatMessage message, IAiService aiService) =>
 {
     var response = new { response = await aiService.Query(message) };
     return Results.Ok(response);
 })
-    .RequireRateLimiting(ApiRateLimitPolicy); ;
+    .RequireRateLimiting(ApiRateLimitPolicy)
+    .WithSummary("Post a message.")
+    .WithDescription("This endpoint handles chat messages and returns a chat response.")
+    .WithTags("Chat");
 
 app.Run();
