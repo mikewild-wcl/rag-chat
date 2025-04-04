@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.AI;
@@ -13,9 +14,11 @@ const string ApiRateLimitPolicy = "api";
 
 var builder = WebApplication.CreateBuilder(args);
 
-var rateLimitOptions = new RateLimitOptions();
 builder.Services
-    .Configure<ApiOptions>(builder.Configuration.GetSection(nameof(ApiOptions)));
+    .Configure<AiServiceOptions>(builder.Configuration.GetSection(nameof(AiServiceOptions)));
+
+var rateLimitOptions = new RateLimitOptions();
+builder.Configuration.GetSection(RateLimitOptions.RateLimit).Bind(rateLimitOptions);
 
 builder.Services
     .AddRateLimiter(_ => _
@@ -31,11 +34,19 @@ builder.Services.AddRazorPages();
 builder.Services.AddOpenApi();
 
 builder.Services
-    .AddSingleton<IAiService, AiService>()
+    .AddSingleton<OllamaAiService>()
+    .AddSingleton<DummyAiService>()
+    .AddSingleton<AiServiceFactory>()
+    .AddSingleton<IAiService>(sp =>
+    {
+        var factory = sp.GetRequiredService<AiServiceFactory>();
+        return factory.CreateAiService();
+    });
+
+builder.Services
     .AddSingleton<IChatClient>(sp =>
 {
-    var options = sp.GetRequiredService<IOptions<ApiOptions>>().Value;
-
+    var options = sp.GetRequiredService<IOptions<AiServiceOptions>>().Value;
     return new OllamaChatClient(new Uri(options.BaseUri), options.ModelName);
 });
 

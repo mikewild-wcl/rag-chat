@@ -11,6 +11,11 @@
 
 	See https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit?view=aspnetcore-9.0
 
+
+## CORS
+	See https://code-maze.com/enabling-cors-in-asp-net-core/
+
+
 ## Ollama
 
 To run this with Ollama as the LLM back end,

@@ -4,40 +4,6 @@ $(document).ready(function () {
     document.body.classList.add("show-chatbot");
 });
 
-document.getElementById('chat-input').addEventListener("keypress", function (event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        document.getElementById("send-button").click();
-    }
-});
-
-document.getElementById('send-button').addEventListener('click', function () {
-    const message = document.getElementById('chat-input').value;
-    if (message.trim() === '') return;
-
-    fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message: message })
-    })
-        .then(response => response.json())
-        .then(data => {
-            const chatMessages = document.getElementById('chat-messages');
-            const userMessage = document.createElement('div');
-            userMessage.textContent = `You: ${message}`;
-            chatMessages.appendChild(userMessage);
-
-            const botMessage = document.createElement('div');
-            botMessage.textContent = `Bot: ${data.response}`;
-            chatMessages.appendChild(botMessage);
-
-            document.getElementById('chat-input').value = '';
-        })
-        .catch(error => console.error('Error:', error));
-});
-
 const chatbotToggler = document.querySelector(".chatbot-toggler");
 const closeBtn = document.querySelector(".close-btn");
 const chatbox = document.querySelector(".chatbox");
@@ -66,22 +32,37 @@ const generateResponse = (message, chatElement) => {
         },
         body: JSON.stringify({ message: message })
     })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 429 || response.status === 503) {
+                console.log('responded');
+                console.log('too many requests!');
+                console.log(`server responded with status ${response.status}`);
+
+                messageElement.textContent = 'The server is busy. Please try again later.';
+                chatbox.scrollTo(0, chatbox.scrollHeight);
+                return null;
+            //    return new Promise(function (resolve, reject) {
+            //        resolve('The server is busy. Please try again later.');
+            //    })
+            }
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            return response.json();
+        })
         .then(data => {
-            const chatMessages = document.getElementById('chat-messages');
-            const userMessage = document.createElement('div');
-            userMessage.textContent = `You: ${message}`;
-            chatMessages.appendChild(userMessage);
-
-            const botMessage = document.createElement('div');
-            botMessage.textContent = `Bot: ${data.response}`;
-            chatMessages.appendChild(botMessage);
-
-            //document.getElementById('chat-input').value = '';
+            console.log('in the data handler...' + data);                       
+            if (!data) return;
+                        
             messageElement.textContent = data.response;
             chatbox.scrollTo(0, chatbox.scrollHeight);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.log('in the error handler...')
+            console.error('Error:', error)
+        });
 }
 
 const handleChat = () => {

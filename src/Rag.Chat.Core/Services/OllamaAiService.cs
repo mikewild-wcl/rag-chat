@@ -8,20 +8,22 @@ using System.Text;
 
 namespace Rag.Chat.Core.Services;
 
-public class AiService(
+public class OllamaAiService(
     IChatClient chatClient,
-    ILogger<AiService> logger,
+    ILogger<OllamaAiService> logger,
     IConfiguration configuration,
-    IOptions<ApiOptions> apiOptions) : IAiService
+    IOptions<AiServiceOptions> aiServiceOptions) : IAiService
 {
-    private readonly ApiOptions _apiSettings = apiOptions.Value;
-    private readonly ILogger<AiService> _logger = logger;
+    private readonly AiServiceOptions _aiServiceOptions = aiServiceOptions.Value;
+    private readonly ILogger<OllamaAiService> _logger = logger;
 
     private List<Microsoft.Extensions.AI.ChatMessage> _chatHistory = new();
 
     public async Task<string> Query(Models.ChatMessage message)
     {
         var responses = new StringBuilder();
+
+        return "ok";
 
         // TODO: chatHistory should be keyed by user or session and cached
         _chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message.Message));
