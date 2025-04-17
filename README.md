@@ -38,6 +38,21 @@ ollama run phi3:mini
 To exit, just type `/bye` in the prompt.
 
 
+## Streamed response
+
+Using code inspired by https://davidpine.net/blog/dotnet-async-enumerable/ to stream the results to the client,
+and https://github.com/IMJONEZZ/LLMs-in-Production/blob/main/chapters/chapter_8/listing_8.1.extremely_basic_streaming_chat.html for the client code.
+
+**TODO:** look at queueing chat requests as done in the above streaming example.
+
+
+## Aspire
+
+**TODO:** investigate running Ollama in Aspire
+	- https://learn.microsoft.com/en-us/dotnet/aspire/community-toolkit/ollama?tabs=dotnet-cli%2Cdocker
+	- https://raygun.com/blog/enhancing-aspire-with-ai-with-ollama/
+
+
 ## OpenApi
 
 OpenApi has been implemented for the web application and enabled when running in development mode.
@@ -48,4 +63,7 @@ Scalar has also been included, and can be used to test the API at https://localh
 See https://devblogs.microsoft.com/dotnet/dotnet9-openapi/ for details on the how OpenApi has been added, and https://www.roundthecode.com/dotnet-blog/swagger-dropped-dotnet-9-what-are-alternatives for some information on OpenApi and Scalar.
 
 
+## Links
+
+- Interesting article on authenticated vs unauthenticated chatbots - https://www.linkedin.com/pulse/understanding-authenticated-unauthenticated-apis-using-microsoft-rajendra/
 

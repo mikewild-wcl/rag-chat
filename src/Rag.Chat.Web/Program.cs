@@ -76,17 +76,69 @@ app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
 
-app.MapPost("/api/chat", 
+app.MapPost("/api/chat",
     async (
         [Description("Chat prompt message.")]
-        [FromBody] Rag.Chat.Core.Models.ChatMessage message, IAiService aiService) =>
+        [FromBody] Rag.Chat.Core.Models.ChatMessage message,
+        IAiService aiService) =>
 {
-    var response = new { response = await aiService.Query(message) };
-    return Results.Ok(response);
+    //var response = new { response = await aiService.Query(message) };
+    //return Results.Ok(response);
+    return Results.Ok(new { response = await aiService.Query(message) });
 })
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a message.")
     .WithDescription("This endpoint handles chat messages and returns a chat response.")
     .WithTags("Chat");
 
+app.MapPost("/api/chat-stream",
+    (
+        [Description("Chat prompt message with streamed response.")]
+        [FromBody] Rag.Chat.Core.Models.ChatMessage message,
+        IAiService aiService) =>
+        //Results.Ok(new { response = PostChatPromptAndGetString(message, aiService) }))
+        PostChatPrompt(message, aiService))
+    .RequireRateLimiting(ApiRateLimitPolicy)
+    .WithSummary("Post a chat message.")
+    .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
+    .WithTags("Chat");
+
+app.MapPost("/api/chat-stream-2",
+    (
+        [Description("Chat prompt message with streamed response.")]
+        [FromBody] Rag.Chat.Core.Models.ChatMessage message, IAiService aiService) =>
+    {
+        return PostChatPrompt(message, aiService);
+    })
+    .RequireRateLimiting(ApiRateLimitPolicy)
+    .WithSummary("Post a message.")
+    .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
+    .WithTags("Chat");
+
 app.Run();
+
+static async IAsyncEnumerable<TokenizedResponse> PostChatPrompt(
+    Rag.Chat.Core.Models.ChatMessage prompt,
+    IAiService aiService)
+{
+    //TODO: Should be able to just return await StreamingQuery 
+    await foreach (var token in aiService.StreamingQuery(prompt))
+    {
+        yield return token;
+        //yield return new { response = text };
+        //yield return resultText;
+    }
+}
+
+static async IAsyncEnumerable<string> PostChatPromptAndGetString(
+    Rag.Chat.Core.Models.ChatMessage prompt,
+    IAiService aiService)
+{
+    //TODO: Should be able to just return await StreamingQuery 
+    await foreach (var token in aiService.StreamingQuery(prompt))
+    {
+        yield return token.Content;
+        //yield return new { response = text };
+        //yield return resultText;
+    }
+}

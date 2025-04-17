@@ -23,8 +23,6 @@ public class OllamaAiService(
     {
         var responses = new StringBuilder();
 
-        return "ok";
-
         // TODO: chatHistory should be keyed by user or session and cached
         _chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message.Message));
 
@@ -49,6 +47,16 @@ public class OllamaAiService(
         _chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.Assistant, responses.ToString()));
 
         return responses.ToString();
+    }
+
+    public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(Models.ChatMessage message)
+    {
+        _chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message.Message));
+
+        await foreach (var item in chatClient.GetStreamingResponseAsync(_chatHistory))
+        {
+            yield return new TokenizedResponse(item.Text);
+        }
     }
 
     public async Task LoadDocuments()

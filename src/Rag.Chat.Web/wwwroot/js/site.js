@@ -55,7 +55,7 @@ const generateResponse = (message, chatElement) => {
         .then(data => {
             console.log('in the data handler...' + data);                       
             if (!data) return;
-                        
+
             messageElement.textContent = data.response;
             chatbox.scrollTo(0, chatbox.scrollHeight);
         })
@@ -85,9 +85,98 @@ const handleChat = () => {
         const incomingChatLi = createChatLi("Thinking...", "incoming");
         chatbox.appendChild(incomingChatLi);
         chatbox.scrollTo(0, chatbox.scrollHeight);
-        generateResponse(userMessage, incomingChatLi);
+        //generateResponse(userMessage, incomingChatLi);
+        sendToServer(userMessage, incomingChatLi);
     }, 600);
 }
+
+/* Code for streaming response */
+// Send prompt to server and stream the response back as tokens are received
+async function sendToServer(message, chatElement) {
+    //var payload = {
+    //    prompt: message
+    //}
+    var payload = {
+        message: message
+    }
+
+    console.log(`sending message ${message}`);
+
+    const response = await fetch('/api/chat-stream', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+
+    var responseText = '';
+    //messageElement = appendMessage(responseText);
+
+    const messageElement = chatElement.querySelector("p");
+
+    const decoder = new TextDecoder();
+
+    for await (const chunk of streamAsyncIterator(response.body)) {
+        var strChunk = String.fromCharCode.apply(null, chunk);
+        console.log(`got streamed chunk ${strChunk}`);
+
+        if (!strChunk) continue;
+
+        //var j = JSON.parse(strChunk);
+        //var item = decoder.decode(chunk).replace(/\[|]/g, '').replace(/^,/, '');
+        var item = strChunk.replace(/\[|]/g, '').replace(/^,/, '');
+        console.log(`streamAsyncIterator item: ${item}`);
+        var parsedItem = JSON.parse(item);
+        console.log(`streamAsyncIterator parsedItem: ${parsedItem}`);
+        console.log(`streamAsyncIterator content:    ${parsedItem.content}`);
+
+        responseText += parsedItem.content; // strChunk;
+        messageElement.textContent = responseText;
+    }
+
+    //Should this be inside the loop so long messages scroll?
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+}
+
+// this might not be needed
+function appendMessage(message) {
+    var chatContainer = document.getElementById('chat-container');
+    var messageElement = document.createElement('div');
+    messageElement.textContent = message;
+    chatContainer.appendChild(messageElement);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return messageElement;
+}
+
+// Streams - https://web.dev/articles/streams
+// Example using IAsyncEnumerable
+// Simple polyfill since StreamResponse still can't be used as iterator by most browsers
+async function* streamAsyncIterator(stream) {
+    const reader = stream.getReader();
+    try {
+        const decoder = new TextDecoder(); //From 
+
+        while (true) {
+            const { done, value } = await reader.read();
+            console.log(`streamAsyncIterator done: ${done}`);
+            console.log(`streamAsyncIterator value: ${value}`);
+            if (done) return;
+
+            var item = decoder.decode(value).replace(/\[|]/g, '').replace(/^,/, '');
+            console.log(`streamAsyncIterator item: ${item}`);
+            var parsedItem = JSON.parse(item);
+            console.log(`streamAsyncIterator parsedItem: ${parsedItem}`);
+            console.log(`streamAsyncIterator content:    ${parsedItem.content}`);
+
+            yield value;
+        }
+    }
+    finally {
+        reader.releaseLock();
+    }
+}
+/* --END Code for streaming response*/  
 
 chatInput.addEventListener("input", () => {
     // Adjust the height of the input textarea based on its content
@@ -96,15 +185,13 @@ chatInput.addEventListener("input", () => {
 });
 
 chatInput.addEventListener("keydown", (e) => {
-    // If Enter key is pressed without Shift key and the window
-    // width is greater than 800px, handle the chat
-    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
+    console.log('key pressed');
+    if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleChat();
     }
 });
 
 sendChatBtn.addEventListener("click", handleChat);
-"show-chatbot"
 closeBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
 chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));

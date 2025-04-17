@@ -18,7 +18,22 @@ public class DummyAiService(
         return "This is a hard-coded response from the AI service.";
     }
 
+    public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(Models.ChatMessage message)
+    {
+        yield return new TokenizedResponse("This");
+        await Task.Delay(500);
+        yield return new TokenizedResponse(" is a");
+        await Task.Delay(700);
+        yield return new TokenizedResponse(" hard-coded");
+        await Task.Delay(500);
+        yield return new TokenizedResponse(" streaming response");
+        await Task.Delay(500);
+        yield return new TokenizedResponse(" from");
+        await Task.Delay(800);
+        yield return new TokenizedResponse(" the AI service.");
+    }
+
     public async Task LoadDocuments()
-    {        
+    {
     }
 }
