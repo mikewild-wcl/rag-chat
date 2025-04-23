@@ -14,6 +14,8 @@ const string ApiRateLimitPolicy = "api";
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Services
     .Configure<AiServiceOptions>(builder.Configuration.GetSection(nameof(AiServiceOptions)));
 
@@ -51,6 +53,8 @@ builder.Services
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

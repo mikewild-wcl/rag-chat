@@ -8,11 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.1.13" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.1.18" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Rag.Chat.Core\Rag.Chat.Core.csproj" />
+    <ProjectReference Include="..\Rag.Chat.ServiceDefaults\Rag.Chat.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

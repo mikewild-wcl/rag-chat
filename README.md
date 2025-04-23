@@ -48,9 +48,11 @@ and https://github.com/IMJONEZZ/LLMs-in-Production/blob/main/chapters/chapter_8/
 
 ## Aspire
 
-**TODO:** investigate running Ollama in Aspire
-	- https://learn.microsoft.com/en-us/dotnet/aspire/community-toolkit/ollama?tabs=dotnet-cli%2Cdocker
-	- https://raygun.com/blog/enhancing-aspire-with-ai-with-ollama/
+.NET Aspire was added to this solution. See [Adding .NET Aspire to your existing .NET apps](https://devblogs.microsoft.com/dotnet/adding-dotnet-aspire-to-your-existing-dotnet-apps/)
+
+Ollama is working via Aspire - see
+ - [.NET Aspire Community Toolkit Ollama integration](https://learn.microsoft.com/en-us/dotnet/aspire/community-toolkit/ollama?tabs=dotnet-cli%2Cdocker)
+ - [Enhancing Aspire with AI: integrating Ollama for local error resolution](https://raygun.com/blog/enhancing-aspire-with-ai-with-ollama/)
 
 
 ## OpenApi
