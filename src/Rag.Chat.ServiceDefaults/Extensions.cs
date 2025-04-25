@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
@@ -15,6 +16,7 @@ namespace Microsoft.Extensions.Hosting
     // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
     public static class Extensions
     {
+
         public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
         {
             builder.ConfigureOpenTelemetry();
@@ -23,10 +25,23 @@ namespace Microsoft.Extensions.Hosting
 
             builder.Services.AddServiceDiscovery();
 
+            var defaultTimeout = TimeSpan.FromSeconds(3600);
             builder.Services.ConfigureHttpClientDefaults(http =>
             {
                 // Turn on resilience by default
-                http.AddStandardResilienceHandler();
+                http.AddStandardResilienceHandler(clientBuilder =>
+                {
+                    // github.com/dotnet/aspire/issues/6937
+                    // https://stackoverflow.com/questions/79007451/polly-timeout-in-blazor-wasm-application-httpclient
+                    clientBuilder.AttemptTimeout = clientBuilder.TotalRequestTimeout = new HttpTimeoutStrategyOptions()
+                    {
+                        Timeout = defaultTimeout,
+                    };
+                    clientBuilder.CircuitBreaker = new HttpCircuitBreakerStrategyOptions()
+                    {
+                        SamplingDuration = defaultTimeout * 2,
+                    };
+                });
 
                 // Turn on service discovery by default
                 http.AddServiceDiscovery();

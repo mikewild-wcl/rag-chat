@@ -55,6 +55,15 @@ public class OllamaAiService(
 
         await foreach (var item in chatClient.GetStreamingResponseAsync(_chatHistory))
         {
+            //yield return new TokenizedResponse(item.Text);
+            var text = new TokenizedResponse(item.Text);
+            if (string.IsNullOrEmpty(item.Text))
+            {
+                continue;
+            }
+            await Task.Delay(300); //Delay so we only send one token at a time
+
+            //yield return new TokenizedResponse(" testing... ");
             yield return new TokenizedResponse(item.Text);
         }
     }

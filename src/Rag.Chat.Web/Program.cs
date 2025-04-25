@@ -33,7 +33,16 @@ builder.Services
         }));
 
 builder.Services.AddRazorPages();
-builder.Services.AddOpenApi();
+
+//builder.Services.AddOpenApi();
+
+builder.AddOllamaApiClient("chat")
+    .AddChatClient()
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
+builder.AddOllamaApiClient("embeddings")
+    .AddEmbeddingGenerator();
 
 builder.Services
     .AddSingleton<OllamaAiService>()
@@ -45,12 +54,12 @@ builder.Services
         return factory.CreateAiService();
     });
 
-builder.Services
-    .AddSingleton<IChatClient>(sp =>
-{
-    var options = sp.GetRequiredService<IOptions<AiServiceOptions>>().Value;
-    return new OllamaChatClient(new Uri(options.BaseUri), options.ModelName);
-});
+//builder.Services
+//    .AddSingleton<IChatClient>(sp =>
+//{
+//    var options = sp.GetRequiredService<IOptions<AiServiceOptions>>().Value;
+//    return new OllamaChatClient(new Uri(options.BaseUri), options.ModelName);
+//});
 
 var app = builder.Build();
 

@@ -150,6 +150,8 @@ function appendMessage(message) {
 }
 
 // Streams - https://web.dev/articles/streams
+// https://okankaradag.com/en/net-6-0/streaming-json-response-with-iasyncenumerable-in-net-6-0-and-example-fetch-in-javascript
+//https://stackoverflow.com/questions/78900183/how-to-split-chunks-into-individual-json-objects
 // Example using IAsyncEnumerable
 // Simple polyfill since StreamResponse still can't be used as iterator by most browsers
 async function* streamAsyncIterator(stream) {
@@ -159,12 +161,23 @@ async function* streamAsyncIterator(stream) {
 
         while (true) {
             const { done, value } = await reader.read();
-            console.log(`streamAsyncIterator done: ${done}`);
-            console.log(`streamAsyncIterator value: ${value}`);
+            console.log(`streamAsyncIterator done: ${done} - value: ${value}`);
             if (done) return;
 
-            var item = decoder.decode(value).replace(/\[|]/g, '').replace(/^,/, '');
+            var item = decoder.decode(value, { stream: true }).replace(/\[|]/g, '').replace(/^,/, '');
+
             console.log(`streamAsyncIterator item: ${item}`);
+
+            // TODO: Sort out problems with multiple json objects coming in together
+            for (const v of item.split(/(?<=\})\s*(?=\{)/)) {
+                console.log("have a split by whitespace");
+            }
+
+            for (const v of item.split(/(?<=\}),(?=\{)/)) {
+                //console.log(JSON.parse(v).id);
+                console.log("have a split by commae");
+            }
+
             var parsedItem = JSON.parse(item);
             console.log(`streamAsyncIterator parsedItem: ${parsedItem}`);
             console.log(`streamAsyncIterator content:    ${parsedItem.content}`);
