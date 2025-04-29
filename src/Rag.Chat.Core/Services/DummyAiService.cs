@@ -21,16 +21,16 @@ public class DummyAiService(
     public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(Models.ChatMessage message)
     {
         yield return new TokenizedResponse("This");
-        await Task.Delay(500);
+        await Task.Delay(200);
         yield return new TokenizedResponse(" is a");
-        await Task.Delay(700);
+        await Task.Delay(200);
         yield return new TokenizedResponse(" hard-coded");
         await Task.Delay(500);
         yield return new TokenizedResponse(" streaming response");
-        await Task.Delay(500);
+        await Task.Delay(300);
         yield return new TokenizedResponse(" from");
-        await Task.Delay(800);
-        yield return new TokenizedResponse(" the AI service.");
+        await Task.Delay(3200);
+        yield return new TokenizedResponse(" the AI service.\n");
     }
 
     public async Task LoadDocuments()
