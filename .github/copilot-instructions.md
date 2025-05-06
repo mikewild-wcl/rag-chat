@@ -14,6 +14,6 @@ state is optional/should be set to false by default
 - Whenever UI changes are added ensure there are
 accompanying tests.
 - use xUnit for unit tests
-- use FluentAssertions version 7.1 for assertions
+- use FluentAssertions version 7.2 for assertions
 - Use Moq for mocking
 

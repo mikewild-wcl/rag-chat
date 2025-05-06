@@ -18,6 +18,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rag.Chat.ServiceDefaults", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rag.Chat.AppHost", "Rag.Chat.AppHost\Rag.Chat.AppHost.csproj", "{65637B91-4762-49BF-8474-039DD17984BC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rag.Chat.Core.UnitTests", "Rag.Chat.Core.UnitTests\Rag.Chat.Core.UnitTests.csproj", "{679B5C75-3314-283D-6DE7-2670ACCE79BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,9 +44,16 @@ Global
 		{65637B91-4762-49BF-8474-039DD17984BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65637B91-4762-49BF-8474-039DD17984BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65637B91-4762-49BF-8474-039DD17984BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{679B5C75-3314-283D-6DE7-2670ACCE79BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{679B5C75-3314-283D-6DE7-2670ACCE79BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{679B5C75-3314-283D-6DE7-2670ACCE79BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{679B5C75-3314-283D-6DE7-2670ACCE79BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{679B5C75-3314-283D-6DE7-2670ACCE79BE} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B7793889-6840-4ACD-BBDF-C65F8FC99A52}
