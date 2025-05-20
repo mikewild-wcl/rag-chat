@@ -116,16 +116,3 @@ static async IAsyncEnumerable<TokenizedResponse> PostChatPrompt(
         yield return token;
     }
 }
-
-static async IAsyncEnumerable<string> PostChatPromptAndGetString(
-    Rag.Chat.Core.Models.ChatMessage prompt,
-    IAiService aiService)
-{
-    //TODO: Should be able to just return await StreamingQuery 
-    await foreach (var token in aiService.StreamingQuery(prompt))
-    {
-        yield return token.Content;
-        //yield return new { response = text };
-        //yield return resultText;
-    }
-}
