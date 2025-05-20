@@ -111,32 +111,17 @@ async function sendToServer(message, chatElement) {
     });
 
     var responseText = '';
-    //messageElement = appendMessage(responseText);
-
     const messageElement = chatElement.querySelector("p");
-
-    const decoder = new TextDecoder();
+    messageElement.textContent = '';
 
     for await (const chunk of streamAsyncIterator(response.body)) {
-        var strChunk = String.fromCharCode.apply(null, chunk);
-        console.log(`got streamed chunk ${strChunk}`);
+        if (!chunk) continue;
 
-        if (!strChunk) continue;
-
-        //var j = JSON.parse(strChunk);
-        //var item = decoder.decode(chunk).replace(/\[|]/g, '').replace(/^,/, '');
-        var item = strChunk.replace(/\[|]/g, '').replace(/^,/, '');
-        console.log(`streamAsyncIterator item: ${item}`);
-        var parsedItem = JSON.parse(item);
-        console.log(`streamAsyncIterator parsedItem: ${parsedItem}`);
-        console.log(`streamAsyncIterator content:    ${parsedItem.content}`);
-
-        responseText += parsedItem.content; // strChunk;
-        messageElement.textContent = responseText;
+        console.log(`streamAsyncIterator item: ${chunk}`);
+        var parsedChunk = JSON.parse(chunk);
+        messageElement.textContent += parsedChunk.content;
+        chatbox.scrollTo(0, chatbox.scrollHeight);
     }
-
-    //Should this be inside the loop so long messages scroll?
-    chatbox.scrollTo(0, chatbox.scrollHeight);
 }
 
 // this might not be needed
@@ -157,7 +142,8 @@ function appendMessage(message) {
 async function* streamAsyncIterator(stream) {
     const reader = stream.getReader();
     try {
-        const decoder = new TextDecoder(); //From 
+        const decoder = new TextDecoder();
+        const debugTarget = document.getElementById('chat-debug');
 
         while (true) {
             const { done, value } = await reader.read();
@@ -168,21 +154,18 @@ async function* streamAsyncIterator(stream) {
 
             console.log(`streamAsyncIterator item: ${item}`);
 
-            // TODO: Sort out problems with multiple json objects coming in together
-            for (const v of item.split(/(?<=\})\s*(?=\{)/)) {
-                console.log("have a split by whitespace");
-            }
+            //for (const v of item.split(/(?<=\})\s*(?=\{)/)) {
+            //    console.log("have a split by whitespace");
+            //    debugTarget.innerHTML += `<p>split by whitespace: ${v}</p>`;
+            //}
 
-            for (const v of item.split(/(?<=\}),(?=\{)/)) {
+            for (const contentChunk of item.split(/(?<=\}),(?=\{)/)) {
                 //console.log(JSON.parse(v).id);
-                console.log("have a split by commae");
+                debugTarget.innerHTML += `<p>split by comma: ${contentChunk}</p>`;
+                debugTarget.scrollTo(0, debugTarget.scrollHeight);
+
+                yield contentChunk;
             }
-
-            var parsedItem = JSON.parse(item);
-            console.log(`streamAsyncIterator parsedItem: ${parsedItem}`);
-            console.log(`streamAsyncIterator content:    ${parsedItem.content}`);
-
-            yield value;
         }
     }
     finally {

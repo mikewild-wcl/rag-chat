@@ -28,10 +28,6 @@ public class OllamaAiService(
 
         await foreach (var item in chatClient.GetStreamingResponseAsync(_chatHistory))
         {
-            //_logger.LogInformation("AI response is by author {Author}", item.AuthorName);
-            //_logger.LogInformation("AI response has role {Role}", item.Role);
-            //_logger.LogInformation("AI response finish reason {FinishReason}", item.FinishReason);
-
             if (item.AdditionalProperties?.Any() == true)
             {
                 foreach (var property in item.AdditionalProperties)
@@ -61,6 +57,7 @@ public class OllamaAiService(
             {
                 continue;
             }
+
             await Task.Delay(300); //Delay so we only send one token at a time
 
             //yield return new TokenizedResponse(" testing... ");

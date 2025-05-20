@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Options;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services;
 using Rag.Chat.Core.Services.Interfaces;
@@ -34,8 +32,7 @@ builder.Services
 
 builder.Services.AddRazorPages();
 
-//builder.Services.AddOpenApi();
-
+//TODO: Look into Semantic Kernel here - https://devblogs.microsoft.com/semantic-kernel/introducing-new-ollama-connector-for-local-models/
 builder.AddOllamaApiClient("chat")
     .AddChatClient()
     .UseFunctionInvocation()
@@ -53,13 +50,6 @@ builder.Services
         var factory = sp.GetRequiredService<AiServiceFactory>();
         return factory.CreateAiService();
     });
-
-//builder.Services
-//    .AddSingleton<IChatClient>(sp =>
-//{
-//    var options = sp.GetRequiredService<IOptions<AiServiceOptions>>().Value;
-//    return new OllamaChatClient(new Uri(options.BaseUri), options.ModelName);
-//});
 
 var app = builder.Build();
 
@@ -108,23 +98,10 @@ app.MapPost("/api/chat-stream",
     (
         [Description("Chat prompt message with streamed response.")]
         [FromBody] Rag.Chat.Core.Models.ChatMessage message,
-        IAiService aiService) =>
-        //Results.Ok(new { response = PostChatPromptAndGetString(message, aiService) }))
-        PostChatPrompt(message, aiService))
+        IAiService aiService) => 
+            PostChatPrompt(message, aiService))
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a chat message.")
-    .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
-    .WithTags("Chat");
-
-app.MapPost("/api/chat-stream-2",
-    (
-        [Description("Chat prompt message with streamed response.")]
-        [FromBody] Rag.Chat.Core.Models.ChatMessage message, IAiService aiService) =>
-    {
-        return PostChatPrompt(message, aiService);
-    })
-    .RequireRateLimiting(ApiRateLimitPolicy)
-    .WithSummary("Post a message.")
     .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
     .WithTags("Chat");
 
@@ -134,12 +111,9 @@ static async IAsyncEnumerable<TokenizedResponse> PostChatPrompt(
     Rag.Chat.Core.Models.ChatMessage prompt,
     IAiService aiService)
 {
-    //TODO: Should be able to just return await StreamingQuery 
     await foreach (var token in aiService.StreamingQuery(prompt))
     {
         yield return token;
-        //yield return new { response = text };
-        //yield return resultText;
     }
 }
 

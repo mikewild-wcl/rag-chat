@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services.Interfaces;

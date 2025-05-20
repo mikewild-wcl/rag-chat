@@ -27,8 +27,4 @@
 			<ProjectReference Include="..\Rag.Chat.Core\Rag.Chat.Core.csproj" />
 		</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Extensions\" />
-	</ItemGroup>
-
 	</Project>

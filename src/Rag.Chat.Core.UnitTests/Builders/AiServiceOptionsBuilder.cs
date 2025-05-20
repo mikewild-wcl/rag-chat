@@ -1,6 +1,6 @@
 ﻿using Rag.Chat.Core.Models;
 
-namespace Rag.Chat.Core.Tests.Builders;
+namespace Rag.Chat.Core.UnitTests.Builders;
 
 public class AiServiceOptionsBuilder
 {

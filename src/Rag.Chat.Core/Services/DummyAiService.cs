@@ -1,10 +1,6 @@
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services.Interfaces;
-using System.Text;
 
 namespace Rag.Chat.Core.Services;
 
@@ -13,7 +9,9 @@ public class DummyAiService(
 {
     private readonly ILogger<OllamaAiService> _logger = logger;
 
-    public async Task<string> Query(Models.ChatMessage message)
+    public int DelayBetweenMessages { get; set; } = 300;
+
+    public async Task<string> Query(ChatMessage message)
     {
         return "This is a hard-coded response from the AI service.";
     }
@@ -21,15 +19,15 @@ public class DummyAiService(
     public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(Models.ChatMessage message)
     {
         yield return new TokenizedResponse("This");
-        await Task.Delay(200);
+        await Task.Delay(DelayBetweenMessages);
         yield return new TokenizedResponse(" is a");
-        await Task.Delay(200);
+        await Task.Delay(DelayBetweenMessages);
         yield return new TokenizedResponse(" hard-coded");
-        await Task.Delay(500);
+        await Task.Delay(DelayBetweenMessages);
         yield return new TokenizedResponse(" streaming response");
-        await Task.Delay(300);
+        await Task.Delay(DelayBetweenMessages);
         yield return new TokenizedResponse(" from");
-        await Task.Delay(3200);
+        await Task.Delay(DelayBetweenMessages);
         yield return new TokenizedResponse(" the AI service.\n");
     }
 
