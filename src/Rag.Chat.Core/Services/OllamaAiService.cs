@@ -75,5 +75,8 @@ public class OllamaAiService(
 
             yield return new TokenizedResponse(item.Content);
         }
-    }    
+
+        //TODO: Collect response and add to chat history
+        //https://github.com/microsoft/semantic-kernel/discussions/8105
+    }
 }

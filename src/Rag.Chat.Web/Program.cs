@@ -80,11 +80,16 @@ builder.Services.AddKeyedTransient(Constants.OllamaKernelKey, (sp, key) =>
 {
     var kernelBuilder = Kernel.CreateBuilder();
 
-    var chatClient = sp.GetKeyedService<OllamaApiClient>("chat");
-    var chatClient2 = sp.GetKeyedService<IOllamaApiClient>("chat") as OllamaApiClient;
+    //TODO: Add keys to Constants class
+
+    //Workaround for errors with IOllamaApiClient etc - create as keyed services above
+    // and cast here.
+    // Inspired by https://github.com/microsoft/semantic-kernel/issues/10532
+    var embeddingClient = sp.GetKeyedService<IOllamaApiClient>("embeddings") as OllamaApiClient;
+    var chatClient = sp.GetKeyedService<IOllamaApiClient>("chat") as OllamaApiClient;
 #pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     kernelBuilder
-        .AddOllamaChatCompletion(ollamaClient: chatClient2, serviceId: "chat")
+        .AddOllamaChatCompletion(ollamaClient: chatClient, serviceId: "chat")
         .AddOllamaEmbeddingGenerator(serviceId: "embedding");
 #pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
