@@ -20,7 +20,7 @@ public class DocumentIngestionService(
             .GetSection(nameof(SourceDocuments))
             .Get<List<SourceDocument>>();
 
-                if (sources is not null)
+        if (sources is not null)
         {
             foreach (var source in sources)
             {

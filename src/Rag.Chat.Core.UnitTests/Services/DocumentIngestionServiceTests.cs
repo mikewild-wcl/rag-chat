@@ -10,8 +10,18 @@ public class DocumentIngestionServiceTests
     public async Task LoadDocuments_Should_Complete_Without_Exception()
     {
         // Arrange
-        var mockConfiguration = new Mock<IConfiguration>();
-        var service = new DocumentIngestionService(mockConfiguration.Object, new NullLogger<DocumentIngestionService>());
+        var inMemorySettings = new Dictionary<string, string>
+        {
+            { "SourceDocuments:0:Title", "page1" },
+            { "SourceDocuments:0:SourceUri", "https://abc.ai" },
+            { "SourceDocuments:0:Type", "html" },
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        var service = new DocumentIngestionService(configuration, new NullLogger<DocumentIngestionService>());
 
         // Act
         var act = async () => await service.LoadDocuments();
