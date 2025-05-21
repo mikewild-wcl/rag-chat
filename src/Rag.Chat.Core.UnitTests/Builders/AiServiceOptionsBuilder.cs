@@ -10,7 +10,7 @@ public class AiServiceOptionsBuilder
     private const string DefaultServiceType = "Ollama";
     private const int DefaultTimeout = 30;
 
-    public AiServiceOptions Build(
+    public static AiServiceOptions Build(
         string apiKey = DefaultApiKey,
         string baseUri = DefaultBaseUri,
         string modelName = DefaultModelName,

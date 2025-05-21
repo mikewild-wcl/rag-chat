@@ -1,6 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Ollama;
+using Microsoft.SemanticKernel.TextGeneration;
+using OllamaSharp;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services;
 using Rag.Chat.Core.Services.Interfaces;
@@ -33,19 +38,68 @@ builder.Services
 builder.Services.AddRazorPages();
 
 //TODO: Look into Semantic Kernel here - https://devblogs.microsoft.com/semantic-kernel/introducing-new-ollama-connector-for-local-models/
-builder.AddOllamaApiClient("chat")
-    .AddChatClient()
-    .UseFunctionInvocation()
-    .UseOpenTelemetry(configure: c =>
-        c.EnableSensitiveData = builder.Environment.IsDevelopment());
-builder.AddOllamaApiClient("embeddings")
-    .AddEmbeddingGenerator();
+//builder.AddOllamaApiClient("chat")
+//    .AddChatClient()
+//    .UseFunctionInvocation()
+//    .UseOpenTelemetry(configure: c =>
+//        c.EnableSensitiveData = builder.Environment.IsDevelopment());
+//builder.AddOllamaApiClient("embeddings")
+//    .AddEmbeddingGenerator();
+
+
+/*********************************************************************/
+
+//https://bartwullems.blogspot.com/2024/10/semantic-kernelgiving-new-ollama.html
+
+//Add keyed Ollama clients
+builder.AddKeyedOllamaApiClient("chat");
+builder.AddKeyedOllamaApiClient("embeddings");
+
+//builder.Services.AddKeyedSingleton<OllamaApiClient>("chat", (serviceProvider, _) =>
+/*
+builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+{
+    var client = (OllamaApiClient)serviceProvider.GetKeyedService<IOllamaApiClient>(connectionName);
+    return new OllamaTextGenerationService(client.SelectedModel, client);
+}
+*/
+/*
+var kernelBuilder = builder.Services.AddKernel();
+
+#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+kernelBuilder
+    .AddOllamaChatCompletion(serviceId: "chat")
+    .AddOllamaEmbeddingGenerator(serviceId: "embedding");
+#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+Kernel kernel = kernelBuilder
+    .Build();
+*/
+
+builder.Services.AddKeyedTransient(Constants.OllamaKernelKey, (sp, key) =>
+{
+    var kernelBuilder = Kernel.CreateBuilder();
+
+    var chatClient = sp.GetKeyedService<OllamaApiClient>("chat");
+    var chatClient2 = sp.GetKeyedService<IOllamaApiClient>("chat") as OllamaApiClient;
+#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    kernelBuilder
+        .AddOllamaChatCompletion(ollamaClient: chatClient2, serviceId: "chat")
+        .AddOllamaEmbeddingGenerator(serviceId: "embedding");
+#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    return kernelBuilder.Build();
+});
 
 builder.Services
-    .AddSingleton<OllamaAiService>()
-    .AddSingleton<DummyAiService>()
-    .AddSingleton<AiServiceFactory>()
-    .AddSingleton<IAiService>(sp =>
+    .AddScoped<IDocumentIngestionService, DocumentIngestionService>();
+
+//Can these services be transient?
+builder.Services
+    .AddTransient<OllamaAiService>()
+    .AddTransient<DummyAiService>()
+    .AddTransient<AiServiceFactory>()
+    .AddSingleton(sp =>
     {
         var factory = sp.GetRequiredService<AiServiceFactory>();
         return factory.CreateAiService();
@@ -98,7 +152,7 @@ app.MapPost("/api/chat-stream",
     (
         [Description("Chat prompt message with streamed response.")]
         [FromBody] Rag.Chat.Core.Models.ChatMessage message,
-        IAiService aiService) => 
+        IAiService aiService) =>
             PostChatPrompt(message, aiService))
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a chat message.")

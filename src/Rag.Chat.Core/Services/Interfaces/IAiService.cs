@@ -4,8 +4,6 @@ namespace Rag.Chat.Core.Services.Interfaces;
 
 public interface IAiService
 {
-    Task LoadDocuments();
-
     Task<string> Query(ChatMessage message);
 
     IAsyncEnumerable<TokenizedResponse> StreamingQuery(ChatMessage message);

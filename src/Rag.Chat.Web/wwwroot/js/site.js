@@ -1,6 +1,7 @@
 ﻿
-$(document).ready(function () {
+$(function () {
     // Open on load to make testing easier
+    console.log('document ready...');
     document.body.classList.add("show-chatbot");
 });
 

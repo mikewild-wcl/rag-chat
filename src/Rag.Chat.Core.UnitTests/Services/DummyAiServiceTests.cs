@@ -1,14 +1,8 @@
-namespace Rag.Chat.Core.UnitTests.Services;
-
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.Extensions.Logging;
-using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services;
-using Xunit;
+
+namespace Rag.Chat.Core.UnitTests.Services;
 
 public class DummyAiServiceTests
 {
@@ -16,8 +10,7 @@ public class DummyAiServiceTests
     public async Task Query_Should_Return_HardCoded_Response()
     {
         // Arrange
-        var mockLogger = new Mock<ILogger<OllamaAiService>>();
-        var service = new DummyAiService(mockLogger.Object);
+        var service = new DummyAiService(new NullLogger<DummyAiService>());
         var message = new ChatMessage("Hello");
 
         // Act
@@ -31,8 +24,7 @@ public class DummyAiServiceTests
     public async Task StreamingQuery_Should_Return_Expected_Tokens()
     {
         // Arrange
-        var mockLogger = new Mock<ILogger<OllamaAiService>>();
-        var service = new DummyAiService(mockLogger.Object)
+        var service = new DummyAiService(new NullLogger<DummyAiService>())
         {
             DelayBetweenMessages = 0 // Set to 0 for faster testing
         };
@@ -47,31 +39,14 @@ public class DummyAiServiceTests
         }
 
         // Assert
-        tokens.Should().BeEquivalentTo(new[]
-        {
+        tokens.Should().BeEquivalentTo(
+        [
             "This",
             " is a",
             " hard-coded",
             " streaming response",
             " from",
             " the AI service.\n"
-        });
-    }
-
-    [Fact]
-    public async Task LoadDocuments_Should_Complete_Without_Exception()
-    {
-        // Arrange
-        var mockLogger = new Mock<ILogger<OllamaAiService>>();
-        var service = new DummyAiService(mockLogger.Object)
-        {
-            DelayBetweenMessages = 0 // Set to 0 for faster testing
-        };
-
-        // Act
-        var act = async () => await service.LoadDocuments();
-
-        // Assert
-        await act.Should().NotThrowAsync();
+        ]);
     }
 }
