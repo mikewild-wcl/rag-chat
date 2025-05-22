@@ -19,6 +19,8 @@ builder.AddServiceDefaults();
 builder.Services
     .Configure<AiServiceOptions>(builder.Configuration.GetSection(nameof(AiServiceOptions)));
 
+var aiServiceType = builder.Configuration.GetSection(nameof(AiServiceOptions)).GetValue<string>("ServiceType");
+
 var rateLimitOptions = new RateLimitOptions();
 builder.Configuration.GetSection(RateLimitOptions.RateLimit).Bind(rateLimitOptions);
 
@@ -96,16 +98,14 @@ builder.Services.AddKeyedTransient(Constants.OllamaKernelKey, (sp, key) =>
 builder.Services
     .AddScoped<IDocumentIngestionService, DocumentIngestionService>();
 
-//Can these services be transient?
-builder.Services
-    .AddTransient<OllamaAiService>()
-    .AddTransient<DummyAiService>()
-    .AddTransient<AiServiceFactory>()
-    .AddSingleton(sp =>
-    {
-        var factory = sp.GetRequiredService<AiServiceFactory>();
-        return factory.CreateAiService();
-    });
+if (aiServiceType == "Dummy")
+{
+    builder.Services.AddTransient<IAiService, DummyAiService>();
+}
+else
+{
+    builder.Services.AddTransient<IAiService, OllamaAiService>();
+}
 
 var app = builder.Build();
 
@@ -128,7 +128,6 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseRateLimiter();
-
 app.UseAuthorization();
 
 app.MapStaticAssets();
