@@ -1,16 +1,12 @@
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Rag.Chat.Core.Services;
+using System.Text;
 
 namespace Rag.Chat.Core.UnitTests.Services;
 
-/*
- * Unit testing - https://devblogs.microsoft.com/semantic-kernel/unit-testing-with-semantic-kernel/
-*/
 public class OllamaAiServiceTests
 {
     [Fact]
@@ -32,22 +28,23 @@ public class OllamaAiServiceTests
     public async Task Query_Should_Return_Concatenated_Response_From_ChatClient()
     {
         // Arrange
-        var mockConfiguration = new Mock<IConfiguration>();
+        var mockChatCompletion = new Mock<IChatCompletionService>();
+        mockChatCompletion
+            .Setup(x => x.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(new List<StreamingChatMessageContent>()
+            {
+                new(AuthorRole.Assistant, "Hello world!")
+            }
+            .ToAsyncEnumerable());
 
-        var kernel = new Kernel();
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddSingleton(mockChatCompletion.Object);
 
-        var chatMessages = new List<Microsoft.Extensions.AI.ChatResponseUpdate>
-        {
-            new(ChatRole.Assistant, "Hello"),
-            new(ChatRole.Assistant, " world!")
-        };
-
-        //mockKernel
-        //    .Setup(c => c.GetStreamingResponseAsync(
-        //        It.IsAny<IReadOnlyList<Microsoft.Extensions.AI.ChatMessage>>(),
-        //        It.IsAny<ChatOptions?>(),
-        //        It.IsAny<CancellationToken>()))
-        //    .Returns(TestHelpers.MockAsyncEnumerable<ChatResponseUpdate>(chatMessages));
+        var kernel = kernelBuilder.Build();
 
         var service = new OllamaAiService(
             kernel,
@@ -63,31 +60,46 @@ public class OllamaAiServiceTests
     }
 
     [Fact]
-    public async Task DoWorkWithPrompt()
+    public async Task StreamingQuery_Should_Return_Concatenated_Response_From_ChatClient()
     {
-        // Arrange 
+        // Arrange
         var mockChatCompletion = new Mock<IChatCompletionService>();
         mockChatCompletion
-            .Setup(x => x.GetChatMessageContentsAsync(
+            .Setup(x => x.GetStreamingChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync([new ChatMessageContent(AuthorRole.Assistant, "AI response")]);
+            .Returns(new List<StreamingChatMessageContent>()
+            {
+                new(AuthorRole.Assistant, "Hello"),
+                new(AuthorRole.Assistant, " "),
+                new(AuthorRole.Assistant, "world"),
+                new(AuthorRole.Assistant, "!")
+            }
+            .ToAsyncEnumerable());
 
         var kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton(mockChatCompletion.Object);
 
         var kernel = kernelBuilder.Build();
-        var service = new OllamaAiService(kernel, new NullLogger<OllamaAiService>());
 
-        // Act 
+        var service = new OllamaAiService(
+            kernel,
+            new NullLogger<OllamaAiService>());
 
+        var input = new Models.ChatMessage("Hi");
 
         // Act
-        var result = await service.Query(new Models.ChatMessage("Prompt to AI"));
+        var results = service.StreamingQuery(input);
 
-        // Assert 
-        Assert.Equal("AI response", result.ToString());
+        var combinedResults = new StringBuilder();
+        await foreach (var result in results)
+        {
+            combinedResults.Append(result.Content);
+        }
+
+        // Assert
+        combinedResults.ToString().Should().Be("Hello world!");
     }
 }

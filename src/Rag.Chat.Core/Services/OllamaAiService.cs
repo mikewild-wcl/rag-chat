@@ -1,8 +1,5 @@
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Rag.Chat.Core.Models;
@@ -19,21 +16,18 @@ public class OllamaAiService(
     private readonly Kernel _kernel = kernel;
     private readonly ILogger<OllamaAiService> _logger = logger;
 
-    //private List<Microsoft.Extensions.AI.ChatMessage> _chatHistory = [];
     private ChatHistory _chatHistory = [];
 
-    public async Task<string> Query(Models.ChatMessage message)
+    public async Task<string> Query(ChatMessage message)
     {
         var responses = new StringBuilder();
 
         // TODO: chatHistory should be keyed by user or session and cached
-        //_chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message.Message));
         _chatHistory.AddUserMessage(message.Message);
 
-        var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();        
-        //await foreach (var item in chatClient.GetStreamingResponseAsync(_chatHistory))
+        var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
         await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(_chatHistory))
-        {            
+        {
             if (item.Metadata?.Any() == true)
             {
                 foreach (var property in item.Metadata)
@@ -46,24 +40,18 @@ public class OllamaAiService(
             responses.Append(item.Content);
         }
 
-        //_chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.Assistant, responses.ToString()));
+        _chatHistory.AddAssistantMessage(responses.ToString());
 
         return responses.ToString();
     }
 
-    public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(Models.ChatMessage message)
+    public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(ChatMessage message)
     {
-        //_chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message.Message));
+        var responses = new StringBuilder();
+
         _chatHistory.AddUserMessage(message.Message);
 
-        //var services = _kernel.GetAllServices<IChatCompletionService>();
-        //foreach (var item in services)
-        //{
-
-        //}
-
         var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
-        //await foreach (var item in chatClient.GetStreamingResponseAsync(_chatHistory))
         await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(_chatHistory))
         {
             if (string.IsNullOrEmpty(item.Content))
@@ -71,12 +59,13 @@ public class OllamaAiService(
                 continue;
             }
 
-            await Task.Delay(300); //Delay so we only send one token at a time
-
+            //await Task.Delay(300); //Delay so we only send one token at a time
+            responses.Append(item.Content);
             yield return new TokenizedResponse(item.Content);
         }
 
         //TODO: Collect response and add to chat history
         //https://github.com/microsoft/semantic-kernel/discussions/8105
+        _chatHistory.AddAssistantMessage(responses.ToString());
     }
 }

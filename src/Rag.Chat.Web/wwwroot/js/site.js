@@ -162,8 +162,10 @@ async function* streamAsyncIterator(stream) {
 
             for (const contentChunk of item.split(/(?<=\}),(?=\{)/)) {
                 //console.log(JSON.parse(v).id);
-                debugTarget.innerHTML += `<p>split by comma: ${contentChunk}</p>`;
-                debugTarget.scrollTo(0, debugTarget.scrollHeight);
+                if (debugTarget) {
+                    debugTarget.innerHTML += `<p>split by comma: ${contentChunk}</p>`;
+                    debugTarget.scrollTo(0, debugTarget.scrollHeight);
+                }
 
                 yield contentChunk;
             }

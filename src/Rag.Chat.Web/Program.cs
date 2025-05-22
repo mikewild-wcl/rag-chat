@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Ollama;
-using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services;

@@ -24,7 +24,6 @@ public class DocumentIngestionService(
         {
             foreach (var source in sources)
             {
-                // Console.WriteLine($"Found document source: {source.SourceUri}");
                 _logger.LogInformation("Found document source: {SourceUri}", source.SourceUri);
             }
         }
