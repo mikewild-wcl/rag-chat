@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
+using OllamaSharp;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services;
 using Rag.Chat.Core.Services.Interfaces;
@@ -16,6 +18,8 @@ builder.AddServiceDefaults();
 
 builder.Services
     .Configure<AiServiceOptions>(builder.Configuration.GetSection(nameof(AiServiceOptions)));
+
+var aiServiceType = builder.Configuration.GetSection(nameof(AiServiceOptions)).GetValue<string>("ServiceType");
 
 var rateLimitOptions = new RateLimitOptions();
 builder.Configuration.GetSection(RateLimitOptions.RateLimit).Bind(rateLimitOptions);
@@ -33,23 +37,75 @@ builder.Services
 builder.Services.AddRazorPages();
 
 //TODO: Look into Semantic Kernel here - https://devblogs.microsoft.com/semantic-kernel/introducing-new-ollama-connector-for-local-models/
-builder.AddOllamaApiClient("chat")
-    .AddChatClient()
-    .UseFunctionInvocation()
-    .UseOpenTelemetry(configure: c =>
-        c.EnableSensitiveData = builder.Environment.IsDevelopment());
-builder.AddOllamaApiClient("embeddings")
-    .AddEmbeddingGenerator();
+//builder.AddOllamaApiClient("chat")
+//    .AddChatClient()
+//    .UseFunctionInvocation()
+//    .UseOpenTelemetry(configure: c =>
+//        c.EnableSensitiveData = builder.Environment.IsDevelopment());
+//builder.AddOllamaApiClient("embeddings")
+//    .AddEmbeddingGenerator();
+
+
+/*********************************************************************/
+
+//https://bartwullems.blogspot.com/2024/10/semantic-kernelgiving-new-ollama.html
+
+//Add keyed Ollama clients
+builder.AddKeyedOllamaApiClient("chat");
+builder.AddKeyedOllamaApiClient("embeddings");
+
+//builder.Services.AddKeyedSingleton<OllamaApiClient>("chat", (serviceProvider, _) =>
+/*
+builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+{
+    var client = (OllamaApiClient)serviceProvider.GetKeyedService<IOllamaApiClient>(connectionName);
+    return new OllamaTextGenerationService(client.SelectedModel, client);
+}
+*/
+/*
+var kernelBuilder = builder.Services.AddKernel();
+
+#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+kernelBuilder
+    .AddOllamaChatCompletion(serviceId: "chat")
+    .AddOllamaEmbeddingGenerator(serviceId: "embedding");
+#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+Kernel kernel = kernelBuilder
+    .Build();
+*/
+
+builder.Services.AddKeyedTransient(Constants.OllamaKernelKey, (sp, key) =>
+{
+    var kernelBuilder = Kernel.CreateBuilder();
+
+    //TODO: Add keys to Constants class
+
+    //Workaround for errors with IOllamaApiClient etc - create as keyed services above
+    // and cast here.
+    // Inspired by https://github.com/microsoft/semantic-kernel/issues/10532
+    var embeddingClient = sp.GetKeyedService<IOllamaApiClient>("embeddings") as OllamaApiClient;
+    var chatClient = sp.GetKeyedService<IOllamaApiClient>("chat") as OllamaApiClient;
+#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    kernelBuilder
+        .AddOllamaChatCompletion(ollamaClient: chatClient, serviceId: "chat")
+        .AddOllamaEmbeddingGenerator(serviceId: "embedding");
+#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    return kernelBuilder.Build();
+});
 
 builder.Services
-    .AddSingleton<OllamaAiService>()
-    .AddSingleton<DummyAiService>()
-    .AddSingleton<AiServiceFactory>()
-    .AddSingleton<IAiService>(sp =>
-    {
-        var factory = sp.GetRequiredService<AiServiceFactory>();
-        return factory.CreateAiService();
-    });
+    .AddScoped<IDocumentIngestionService, DocumentIngestionService>();
+
+if (aiServiceType == "Dummy")
+{
+    builder.Services.AddTransient<IAiService, DummyAiService>();
+}
+else
+{
+    builder.Services.AddTransient<IAiService, OllamaAiService>();
+}
 
 var app = builder.Build();
 
@@ -72,7 +128,6 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseRateLimiter();
-
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -98,7 +153,7 @@ app.MapPost("/api/chat-stream",
     (
         [Description("Chat prompt message with streamed response.")]
         [FromBody] Rag.Chat.Core.Models.ChatMessage message,
-        IAiService aiService) => 
+        IAiService aiService) =>
             PostChatPrompt(message, aiService))
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a chat message.")

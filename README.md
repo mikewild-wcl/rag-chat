@@ -65,6 +65,10 @@ Scalar has also been included, and can be used to test the API at https://localh
 See https://devblogs.microsoft.com/dotnet/dotnet9-openapi/ for details on the how OpenApi has been added, and https://www.roundthecode.com/dotnet-blog/swagger-dropped-dotnet-9-what-are-alternatives for some information on OpenApi and Scalar.
 
 
+## Semantic Kernel
+
+Unit testing - https://devblogs.microsoft.com/semantic-kernel/unit-testing-with-semantic-kernel/
+
 ## Links
 
 - Interesting article on authenticated vs unauthenticated chatbots - https://www.linkedin.com/pulse/understanding-authenticated-unauthenticated-apis-using-microsoft-rajendra/
