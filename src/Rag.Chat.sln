@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rag.Chat.Core.UnitTests", "Rag.Chat.Core.UnitTests\Rag.Chat.Core.UnitTests.csproj", "{679B5C75-3314-283D-6DE7-2670ACCE79BE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aspire", "Aspire", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{7BC9DF57-358B-4E37-82CD-23F743389158} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{65637B91-4762-49BF-8474-039DD17984BC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{679B5C75-3314-283D-6DE7-2670ACCE79BE} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
