@@ -73,3 +73,9 @@ Unit testing - https://devblogs.microsoft.com/semantic-kernel/unit-testing-with-
 
 - Interesting article on authenticated vs unauthenticated chatbots - https://www.linkedin.com/pulse/understanding-authenticated-unauthenticated-apis-using-microsoft-rajendra/
 
+
+## Telemetry
+
+See https://youtu.be/llD66wLW5GA?si=wTLQj87T5NA26r3l
+
+

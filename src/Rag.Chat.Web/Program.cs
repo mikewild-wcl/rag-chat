@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using OllamaSharp;
 using Rag.Chat.Core.Models;
@@ -95,8 +94,11 @@ builder.Services.AddKeyedTransient(Constants.OllamaKernelKey, (sp, key) =>
     return kernelBuilder.Build();
 });
 
+builder.AddAzureCosmosClient(connectionName: "cosmos-db");
+
 builder.Services
-    .AddScoped<IDocumentIngestionService, DocumentIngestionService>();
+    .AddScoped<IDocumentIngestionService, DocumentIngestionService>()
+    .AddSingleton<IChatHistoryPersistenceService, InMemoryChatHistoryPersistenceService>();
 
 if (aiServiceType == "Dummy")
 {
@@ -137,13 +139,15 @@ app.MapRazorPages()
 app.MapPost("/api/chat",
     async (
         [Description("Chat prompt message.")]
-        [FromBody] Rag.Chat.Core.Models.ChatMessage message,
+        [FromBody] ChatMessage message,
         IAiService aiService) =>
-{
-    //var response = new { response = await aiService.Query(message) };
-    //return Results.Ok(response);
-    return Results.Ok(new { response = await aiService.Query(message) });
-})
+    {
+        var userId = GetCurrentUserId();
+        return Results.Ok(new
+        {
+            response = await aiService.Query(message with { UserId = GetCurrentUserId() })
+        });
+    })
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a message.")
     .WithDescription("This endpoint handles chat messages and returns a chat response.")
@@ -152,9 +156,11 @@ app.MapPost("/api/chat",
 app.MapPost("/api/chat-stream",
     (
         [Description("Chat prompt message with streamed response.")]
-        [FromBody] Rag.Chat.Core.Models.ChatMessage message,
+        [FromBody] ChatMessage message,
         IAiService aiService) =>
-            PostChatPrompt(message, aiService))
+    {
+        return PostChatPrompt(message with { UserId = GetCurrentUserId() }, aiService);
+    })
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a chat message.")
     .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
@@ -163,11 +169,17 @@ app.MapPost("/api/chat-stream",
 app.Run();
 
 static async IAsyncEnumerable<TokenizedResponse> PostChatPrompt(
-    Rag.Chat.Core.Models.ChatMessage prompt,
+    ChatMessage prompt,
     IAiService aiService)
 {
     await foreach (var token in aiService.StreamingQuery(prompt))
     {
         yield return token;
     }
+}
+
+Guid GetCurrentUserId()
+{
+    // TODO: Get user from auth
+    return new Guid("562ff504-e8c5-4408-a7e8-84ec6bea2e40");
 }

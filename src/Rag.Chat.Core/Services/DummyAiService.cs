@@ -17,7 +17,7 @@ public class DummyAiService(
         return "This is a hard-coded response from the AI service.";
     }
 
-    public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(Models.ChatMessage message)
+    public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(ChatMessage message)
     {
         _logger.LogInformation("{Service} {Method} called and will start yielding results. Delay is {Delay}",
                 nameof(DummyAiService),

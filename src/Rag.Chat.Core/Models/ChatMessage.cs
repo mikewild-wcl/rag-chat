@@ -6,4 +6,5 @@ public record ChatMessage(
     [Description("Chat prompt message string.")]
     string Message)
 {
+    public Guid? UserId { get; init; }
 }

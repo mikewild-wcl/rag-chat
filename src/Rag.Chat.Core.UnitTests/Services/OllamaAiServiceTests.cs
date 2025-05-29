@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Rag.Chat.Core.Services;
+using Rag.Chat.Core.Services.Interfaces;
+using Rag.Chat.Core.UnitTests.Builders;
 using System.Text;
 
 namespace Rag.Chat.Core.UnitTests.Services;
@@ -16,9 +18,7 @@ public class OllamaAiServiceTests
         var kernel = new Kernel();
 
         // Act
-        var act = () => new OllamaAiService(
-            kernel,
-            new NullLogger<OllamaAiService>());
+        var act = () => AiServiceBuilder.Build();
 
         // Assert
         act.Should().NotThrow();
@@ -43,12 +43,9 @@ public class OllamaAiServiceTests
 
         var kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton(mockChatCompletion.Object);
-
         var kernel = kernelBuilder.Build();
 
-        var service = new OllamaAiService(
-            kernel,
-            new NullLogger<OllamaAiService>());
+        var service = AiServiceBuilder.Build(kernel);
 
         var input = new Models.ChatMessage("Hi");
 
@@ -81,12 +78,9 @@ public class OllamaAiServiceTests
 
         var kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton(mockChatCompletion.Object);
-
         var kernel = kernelBuilder.Build();
 
-        var service = new OllamaAiService(
-            kernel,
-            new NullLogger<OllamaAiService>());
+        var service = AiServiceBuilder.Build(kernel);
 
         var input = new Models.ChatMessage("Hi");
 
@@ -102,4 +96,57 @@ public class OllamaAiServiceTests
         // Assert
         combinedResults.ToString().Should().Be("Hello world!");
     }
+
+    [Fact]
+    public async Task StreamingQuery_Should_Persist_Chat_History()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        ChatHistory chatHistory = [new ChatMessageContent {  Role = AuthorRole .Developer, Content = "test" }];
+
+        var mockChatHistoryPersistenceService = new Mock<IChatHistoryPersistenceService>();
+        mockChatHistoryPersistenceService
+            .Setup(x => x.Retrieve(userId.ToString()))
+            .ReturnsAsync(chatHistory);
+
+        var mockChatCompletion = new Mock<IChatCompletionService>();
+        mockChatCompletion
+            .Setup(x => x.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(new List<StreamingChatMessageContent>()
+            {
+                new(AuthorRole.Assistant, "Hello"),
+            }
+            .ToAsyncEnumerable());
+
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddSingleton(mockChatCompletion.Object);
+        var kernel = kernelBuilder.Build();
+
+        var service = AiServiceBuilder.Build(
+            kernel,
+            mockChatHistoryPersistenceService.Object);
+
+        var input = new Models.ChatMessage("Hi")
+        {
+            UserId = userId
+        };
+
+        // Act
+        await foreach (var _ in service.StreamingQuery(input)); //loop and discard results
+
+        // Assert
+        mockChatHistoryPersistenceService.Verify(
+            x => x.Retrieve(userId.ToString()),
+            Times.Once);
+        mockChatHistoryPersistenceService.Verify(
+            x => x.Save(
+                userId.ToString(), 
+                It.Is<ChatHistory>(x => x != null)),
+            Times.Once);
+    }
+
 }
