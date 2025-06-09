@@ -32,10 +32,10 @@ public class OllamaAiService(
 
     public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(ChatMessage message)
     {
-        //if(message?.Message is null)
-        //{
-        //    yield return default;
-        //}
+        if(message?.Message is null)
+        {
+            yield break;
+        }
 
         var chatHistoryKey = message?.UserId?.ToString();
         var chatHistory = ((chatHistoryKey is not null) 
@@ -43,7 +43,7 @@ public class OllamaAiService(
             : null)
             ?? [];
 
-        chatHistory.AddUserMessage(message.Message);
+        chatHistory.AddUserMessage(message!.Message);
 
         var responses = new StringBuilder();
 

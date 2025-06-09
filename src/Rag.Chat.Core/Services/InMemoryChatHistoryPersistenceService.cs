@@ -8,12 +8,18 @@ public class InMemoryChatHistoryPersistenceService : IChatHistoryPersistenceServ
 {
     private readonly ConcurrentDictionary<string, ChatHistory> _chatHistories = new();
 
-    public Task<ChatHistory?> Retrieve(string key) =>
-        Task.FromResult(_chatHistories.TryGetValue(key, out var chatHistory) ? chatHistory : null);
-
-    public Task Save(string key, ChatHistory chatHistory)
+    public Task Remove(string userId)
     {
-        _chatHistories[key] = chatHistory;
+        _chatHistories.TryRemove(userId, out _);
+        return Task.CompletedTask;
+    }
+
+    public Task<ChatHistory?> Retrieve(string userId) =>
+        Task.FromResult(_chatHistories.TryGetValue(userId, out var chatHistory) ? chatHistory : null);
+
+    public Task Save(string userId, ChatHistory chatHistory)
+    {
+        _chatHistories[userId] = chatHistory;
         return Task.CompletedTask;
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel;
 using OllamaSharp;
 using Rag.Chat.Core.Models;
@@ -16,7 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 builder.Services
-    .Configure<AiServiceOptions>(builder.Configuration.GetSection(nameof(AiServiceOptions)));
+    .Configure<AiServiceOptions>(builder.Configuration.GetSection(nameof(AiServiceOptions)))
+    .Configure<CosmosDbOptions>(builder.Configuration.GetSection(nameof(CosmosDbOptions)));
 
 var aiServiceType = builder.Configuration.GetSection(nameof(AiServiceOptions)).GetValue<string>("ServiceType");
 
@@ -94,11 +96,20 @@ builder.Services.AddKeyedTransient(Constants.OllamaKernelKey, (sp, key) =>
     return kernelBuilder.Build();
 });
 
-builder.AddAzureCosmosClient(connectionName: "cosmos-db");
+builder.AddAzureCosmosClient(
+    connectionName: "cosmos-db", 
+    configureClientOptions: (options) => 
+        options.SerializerOptions = new() 
+        { 
+            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase            
+        }
+    );
 
 builder.Services
     .AddScoped<IDocumentIngestionService, DocumentIngestionService>()
-    .AddSingleton<IChatHistoryPersistenceService, InMemoryChatHistoryPersistenceService>();
+    //.AddSingleton<IChatHistoryPersistenceService, InMemoryChatHistoryPersistenceService>()
+    .AddSingleton<IChatHistoryPersistenceService, CosmosChatHistoryPersistenceService>()
+    ;
 
 if (aiServiceType == "Dummy")
 {

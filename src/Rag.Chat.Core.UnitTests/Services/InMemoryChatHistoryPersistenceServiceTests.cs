@@ -52,4 +52,38 @@ public class InMemoryChatHistoryPersistenceServiceTests
         // Assert
         result.Should().BeSameAs(updatedChatHistory);
     }
+
+    [Fact]
+    public async Task Remove_Should_Delete_ChatHistory()
+    {
+        // Arrange
+        var service = new InMemoryChatHistoryPersistenceService();
+        var chatHistory = new ChatHistory();
+        var userId = "test-user";
+
+        await service.Save(userId, chatHistory);
+
+        // Act
+        await service.Remove(userId);
+        var result = await service.Retrieve(userId);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Remove_Should_Not_Throw_Exception_When_Key_Does_Not_Exist()
+    {
+        // Arrange
+        var service = new InMemoryChatHistoryPersistenceService();
+        var chatHistory = new ChatHistory();
+        var userId = "test-user";
+
+        // Act
+        await service.Remove(userId);
+        var result = await service.Retrieve(userId);
+
+        // Assert
+        result.Should().BeNull();
+    }
 }

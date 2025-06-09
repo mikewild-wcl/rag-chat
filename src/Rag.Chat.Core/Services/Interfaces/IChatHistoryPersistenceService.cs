@@ -4,7 +4,9 @@ namespace Rag.Chat.Core.Services.Interfaces;
 
 public interface IChatHistoryPersistenceService
 {
-    Task<ChatHistory?> Retrieve(string key);
+    Task Remove(string userId);
 
-    Task Save(string key, ChatHistory chatHistory);
+    Task<ChatHistory?> Retrieve(string userId);
+
+    Task Save(string userId, ChatHistory chatHistory);
 }

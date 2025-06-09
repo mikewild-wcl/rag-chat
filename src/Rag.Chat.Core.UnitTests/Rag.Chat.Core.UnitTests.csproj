@@ -13,7 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
 		<PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.54.0" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 		<PackageReference Include="xunit" Version="2.9.3" />

@@ -11,10 +11,10 @@ public class DummyAiService(
 
     public int DelayBetweenMessages { get; set; } = 300;
 
-    public async Task<string> Query(ChatMessage message)
+    public Task<string> Query(ChatMessage message)
     {
         _logger.LogInformation("{Service} {Method} called.", nameof(DummyAiService), nameof(StreamingQuery));
-        return "This is a hard-coded response from the AI service.";
+        return Task.FromResult("This is a hard-coded response from the AI service.");
     }
 
     public async IAsyncEnumerable<TokenizedResponse> StreamingQuery(ChatMessage message)

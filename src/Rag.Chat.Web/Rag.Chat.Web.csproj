@@ -14,7 +14,7 @@
 	  <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.54.0-alpha" />
 	  <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.54.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.4.2" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.4.7" />
   </ItemGroup>
 
   <ItemGroup>
