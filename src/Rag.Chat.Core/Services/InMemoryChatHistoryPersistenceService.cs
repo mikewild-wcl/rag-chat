@@ -1,8 +1,8 @@
-namespace Rag.Chat.Core.Services;
-
 using System.Collections.Concurrent;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Rag.Chat.Core.Services.Interfaces;
+
+namespace Rag.Chat.Core.Services;
 
 public class InMemoryChatHistoryPersistenceService : IChatHistoryPersistenceService
 {

@@ -177,6 +177,19 @@ app.MapPost("/api/chat-stream",
     .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
     .WithTags("Chat");
 
+app.MapDelete("/api/clear-chat",
+    async (
+        [Description("Clear chat.")]
+        IAiService aiService) =>
+    {
+        await aiService.ClearChat(GetCurrentUserId());
+        return Results.NoContent();
+    })
+    .RequireRateLimiting(ApiRateLimitPolicy)
+    .WithSummary("Post a chat message.")
+    .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
+    .WithTags("Chat");
+
 app.Run();
 
 static async IAsyncEnumerable<TokenizedResponse> PostChatPrompt(

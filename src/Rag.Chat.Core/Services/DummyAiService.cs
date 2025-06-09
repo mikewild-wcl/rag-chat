@@ -11,6 +11,12 @@ public class DummyAiService(
 
     public int DelayBetweenMessages { get; set; } = 300;
 
+    public Task ClearChat(Guid? userId)
+    {
+        // No operation for the dummy service
+        return Task.CompletedTask;
+    }
+
     public Task<string> Query(ChatMessage message)
     {
         _logger.LogInformation("{Service} {Method} called.", nameof(DummyAiService), nameof(StreamingQuery));

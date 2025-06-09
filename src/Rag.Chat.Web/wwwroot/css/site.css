@@ -227,6 +227,25 @@ header h2 {
     visibility: visible;
 }
 
+.chat-tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.btn-clear {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-clear:hover {
+    background-color: darkred;
+}
+
 @media (max-width: 490px) {
     .chatbot-toggler {
         right: 20px;

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services.Interfaces;
+using System.Diagnostics;
 
 namespace Rag.Chat.Core.Services;
 
@@ -24,6 +25,10 @@ public class CosmosChatHistoryPersistenceService(
             await container.DeleteItemAsync<UserChatHistoryContainer>(userId, new PartitionKey(userId));
             _logger.LogInformation("Removed chat history for userId {UserId}", userId);
         }
+        catch (CosmosException ex)
+        {
+            _logger.LogError(ex, "Cosmos DB error occurred while removing chat history for user {UserId}", userId);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while removing chat history for user {UserId}", userId);
@@ -35,9 +40,13 @@ public class CosmosChatHistoryPersistenceService(
         try
         {
             var container = await GetContainer();
+
+            //https://github.com/microsoft/semantic-kernel/issues/2443
+            //https://github.com/microsoft/semantic-kernel/discussions/6582
+            //https://github.com/microsoft/semantic-kernel/discussions/5815
             var response = await container.ReadItemAsync<UserChatHistoryContainer>(key, new PartitionKey(key));
 
-            if(response.Resource is null)
+            if (response.Resource is null)
             {
                 return null;
             }
@@ -54,19 +63,27 @@ public class CosmosChatHistoryPersistenceService(
     {
         var container = await GetContainer();
 
-        var userChatHistory = new UserChatHistoryContainer(userId, userId, chatHistory);
+        foreach (var msg in chatHistory)
+        {
+            Debug.WriteLine($"Message: {msg.Role} - {msg.Content}");
+        }
 
-        //https://stackoverflow.com/questions/69070451/getting-one-of-the-specified-inputs-is-invalid-in-azure-cosmosdb-patchitemasyn
+        var userChatHistory = new UserChatHistoryContainer(userId, userId, chatHistory);
+        var ser = Newtonsoft.Json.JsonConvert.SerializeObject(chatHistory);
+        var ser2 = Newtonsoft.Json.JsonConvert.SerializeObject(userChatHistory);
+
         var response = await container.UpsertItemAsync(userChatHistory, new PartitionKey(userId));
         _logger.LogInformation("Saved chat history for userId {UserId}. Response status {StatusCode}.", userId, response.StatusCode);
     }
 
     private async Task<Container> GetContainer()
     {
-        var database = await _cosmosClient
+        var databaseResponse = await _cosmosClient
             .CreateDatabaseIfNotExistsAsync(_cosmosDbOptions.DatabaseName);
-        var container = await database
-            .Database
+
+        var database = databaseResponse.Database;
+
+        var containerResponse = await database
             .CreateContainerIfNotExistsAsync(
                 new ContainerProperties
                 {
@@ -74,6 +91,6 @@ public class CosmosChatHistoryPersistenceService(
                     PartitionKeyPath = "/userId"
                 });
 
-        return container;
+        return containerResponse.Container;
     }
 }

@@ -1,10 +1,7 @@
-namespace Rag.Chat.Core.UnitTests.Services;
-
-using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Rag.Chat.Core.Services;
-using Xunit;
+
+namespace Rag.Chat.Core.UnitTests.Services;
 
 public class InMemoryChatHistoryPersistenceServiceTests
 {

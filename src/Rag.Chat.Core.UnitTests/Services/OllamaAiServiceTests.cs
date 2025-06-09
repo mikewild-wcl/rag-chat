@@ -1,8 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Rag.Chat.Core.Services;
 using Rag.Chat.Core.Services.Interfaces;
 using Rag.Chat.Core.UnitTests.Builders;
 using System.Text;
@@ -18,10 +16,31 @@ public class OllamaAiServiceTests
         var kernel = new Kernel();
 
         // Act
-        var act = () => AiServiceBuilder.Build();
+        var act = () => AiServiceBuilder.Build(kernel);
 
         // Assert
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public async Task ClearChat_Should_Clear_Conversation()
+    {
+        // Arrange
+        var mockChatHistoryPersistenceService = new Mock<IChatHistoryPersistenceService>();
+        var kernel = Kernel.CreateBuilder().Build(); 
+        var service = AiServiceBuilder.Build(
+            kernel,
+            mockChatHistoryPersistenceService.Object);
+
+        var userId = Guid.NewGuid();
+
+        // Act
+        await service.ClearChat(userId);
+
+        // Assert
+        mockChatHistoryPersistenceService.Verify(
+            x => x.Remove(userId.ToString()),
+            Times.Once);
     }
 
     [Fact]

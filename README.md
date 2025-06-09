@@ -72,7 +72,7 @@ Unit testing - https://devblogs.microsoft.com/semantic-kernel/unit-testing-with-
 ## Links
 
 - Interesting article on authenticated vs unauthenticated chatbots - https://www.linkedin.com/pulse/understanding-authenticated-unauthenticated-apis-using-microsoft-rajendra/
-
+- SQL Server vector showcase - https://github.com/marcominerva/SqlDatabaseVectorSearch
 
 ## Telemetry
 

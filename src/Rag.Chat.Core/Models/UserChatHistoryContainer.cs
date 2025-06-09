@@ -1,5 +1,4 @@
 ﻿using Microsoft.SemanticKernel.ChatCompletion;
-using Newtonsoft.Json;
 
 namespace Rag.Chat.Core.Models;
 

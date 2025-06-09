@@ -7,6 +7,21 @@ namespace Rag.Chat.Core.UnitTests.Services;
 public class DummyAiServiceTests
 {
     [Fact]
+    public async Task ClearChat_Should_Clear_Conversation()
+    {
+        // Arrange
+        var service = new DummyAiService(new NullLogger<DummyAiService>());
+
+        var userId = Guid.NewGuid();
+
+        // Act
+        await service.ClearChat(userId);
+
+        // Assert
+        // No assertion - this is a dummy call with no result
+    }
+
+    [Fact]
     public async Task Query_Should_Return_HardCoded_Response()
     {
         // Arrange

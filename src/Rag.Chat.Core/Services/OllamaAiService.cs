@@ -18,6 +18,17 @@ public class OllamaAiService(
     private readonly IChatHistoryPersistenceService _chatHistoryPersistenceService = chatHistoryPersistenceService;
     private readonly ILogger<OllamaAiService> _logger = logger;
 
+    public async Task ClearChat(Guid? userId)
+    {
+        if(userId is null)
+        {
+            _logger.LogWarning("ClearChat called with null UserId. No action taken.");
+            return;
+        }
+
+        await _chatHistoryPersistenceService.Remove(userId.Value.ToString());
+    }
+
     public async Task<string> Query(ChatMessage message)
     {
         var responses = new StringBuilder();

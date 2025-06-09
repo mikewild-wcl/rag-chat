@@ -6,10 +6,11 @@ $(function () {
 });
 
 const chatbotToggler = document.querySelector(".chatbot-toggler");
+const clearChatBtn = document.querySelector(".chat-input span#clear-chat-btn");
 const closeBtn = document.querySelector(".close-btn");
 const chatbox = document.querySelector(".chatbox");
 const chatInput = document.querySelector(".chat-input textarea");
-const sendChatBtn = document.querySelector(".chat-input span");
+const sendChatBtn = document.querySelector(".chat-input span#send-btn");
 
 let userMessage = null;
 const inputInitHeight = chatInput.scrollHeight;
@@ -67,9 +68,6 @@ const generateResponse = (message, chatElement) => {
 }
 
 const handleChat = () => {
-    //const message = document.getElementById('chat-input').value;
-    //if (message.trim() === '') return;
-
     userMessage = chatInput.value.trim();
     if (!userMessage) return;
 
@@ -111,7 +109,6 @@ async function sendToServer(message, chatElement) {
         body: JSON.stringify(payload),
     });
 
-    var responseText = '';
     const messageElement = chatElement.querySelector("p");
     messageElement.textContent = '';
 
@@ -162,11 +159,10 @@ async function* streamAsyncIterator(stream) {
 
             for (const contentChunk of item.split(/(?<=\}),(?=\{)/)) {
                 //console.log(JSON.parse(v).id);
-                if (debugTarget) {
-                    debugTarget.innerHTML += `<p>split by comma: ${contentChunk}</p>`;
-                    debugTarget.scrollTo(0, debugTarget.scrollHeight);
-                }
-
+                //if (debugTarget) {
+                //    debugTarget.innerHTML += `<p>split by comma: ${contentChunk}</p>`;
+                //    debugTarget.scrollTo(0, debugTarget.scrollHeight);
+                //}
                 yield contentChunk;
             }
         }
@@ -175,7 +171,22 @@ async function* streamAsyncIterator(stream) {
         reader.releaseLock();
     }
 }
-/* --END Code for streaming response*/  
+/* --END Code for streaming response*/
+
+async function handleClearChat() {
+    console.log(`sending clear chat message`);
+
+    const response = await fetch('/api/clear-chat', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    if (!response.ok) {
+        chatInput.value = "";
+    }
+}
 
 chatInput.addEventListener("input", () => {
     // Adjust the height of the input textarea based on its content
@@ -193,4 +204,5 @@ chatInput.addEventListener("keydown", (e) => {
 
 sendChatBtn.addEventListener("click", handleChat);
 closeBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
+clearChatBtn.addEventListener("click", handleClearChat);
 chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
