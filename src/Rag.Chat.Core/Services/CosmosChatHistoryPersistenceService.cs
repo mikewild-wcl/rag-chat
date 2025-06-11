@@ -44,6 +44,17 @@ public class CosmosChatHistoryPersistenceService(
             //https://github.com/microsoft/semantic-kernel/issues/2443
             //https://github.com/microsoft/semantic-kernel/discussions/6582
             //https://github.com/microsoft/semantic-kernel/discussions/5815
+
+            //https://stackoverflow.com/questions/76219161/cosmosclient-custom-json-converter-works-out-of-the-box-with-newtonsoft-not-w
+            //https://www.billtalkstoomuch.com/2023/03/14/cosmosdb-system-text-json-i-take-it-all-back/amp/
+            //Custom serializer - https://github.com/Azure/azure-cosmos-dotnet-v3/blob/master/Microsoft.Azure.Cosmos.Samples/Usage/SystemTextJson/CosmosSystemTextJsonSerializer.cs?ref=billtalkstoomuch.com
+
+            /*
+              The JSON payload for polymorphic interface or abstract type 'Microsoft.SemanticKernel.KernelContent' must specify a type discriminator. Path: $.chatHistory[0].items[0] | LineNumber: 0 | BytePositionInLine: 185.
+              https://stackoverflow.com/questions/77669675/system-text-json-polymorphic-deserialization-exception-when-type-is-not-the-fir
+              https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism
+                [JsonDerivedType(typeof(WeatherForecastWithCity))]
+             */
             var response = await container.ReadItemAsync<UserChatHistoryContainer>(key, new PartitionKey(key));
 
             if (response.Resource is null)
@@ -69,9 +80,6 @@ public class CosmosChatHistoryPersistenceService(
         }
 
         var userChatHistory = new UserChatHistoryContainer(userId, userId, chatHistory);
-        var ser = Newtonsoft.Json.JsonConvert.SerializeObject(chatHistory);
-        var ser2 = Newtonsoft.Json.JsonConvert.SerializeObject(userChatHistory);
-
         var response = await container.UpsertItemAsync(userChatHistory, new PartitionKey(userId));
         _logger.LogInformation("Saved chat history for userId {UserId}. Response status {StatusCode}.", userId, response.StatusCode);
     }

@@ -1,13 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using OllamaSharp;
 using Rag.Chat.Core.Models;
+using Rag.Chat.Core.Serialization;
 using Rag.Chat.Core.Services;
 using Rag.Chat.Core.Services.Interfaces;
 using Scalar.AspNetCore;
 using System.ComponentModel;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 const string ApiRateLimitPolicy = "api";
@@ -96,13 +101,44 @@ builder.Services.AddKeyedTransient(Constants.OllamaKernelKey, (sp, key) =>
     return kernelBuilder.Build();
 });
 
+/*
+JsonSerializerOptions options = new()
+      {
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        WriteIndented = true,
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+      };
+      var cosmosClientOptions = new CosmosClientOptions()
+      {
+        ConnectionMode = ConnectionMode.Direct,
+        HttpClientFactory = httpClientFactory.CreateClient,
+        Serializer = new CosmosSystemTextJsonSerializer(options),
+      };
+      return new CosmosClient(connectionString, cosmosClientOptions); */
+
+//var jsonSerializerOptions = new JsonSerializerOptions()
+//{
+//    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+//    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+//};
+
 builder.AddAzureCosmosClient(
     connectionName: "cosmos-db", 
-    configureClientOptions: (options) => 
-        options.SerializerOptions = new() 
-        { 
-            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase            
-        }
+    configureClientOptions: (options) =>
+        // options.ConnectionMode = ConnectionMode.Direct,
+        options.Serializer = new CosmosSystemTextJsonSerializer(new JsonSerializerOptions
+        {
+            AllowOutOfOrderMetadataProperties = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        })
+        //options.SerializerOptions = 
+
+        //options.SerializerOptions = new()
+        //{
+        //    PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+        //}
     );
 
 builder.Services
