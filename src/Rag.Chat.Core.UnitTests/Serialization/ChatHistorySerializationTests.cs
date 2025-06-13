@@ -1,6 +1,6 @@
-﻿using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
+﻿using Microsoft.SemanticKernel.ChatCompletion;
 using Rag.Chat.Core.Serialization;
+using Rag.Chat.Core.UnitTests.TestExtensions;
 using System.Text;
 using System.Text.Json;
 
@@ -38,7 +38,7 @@ namespace Rag.Chat.Core.UnitTests.Serialization
             chatHistoryDeserialized.Should().NotBeNull();
             chatHistoryDeserialized.Should().BeEquivalentTo(_chatHistory);
 
-            ValidateChatHistory(chatHistoryDeserialized);
+            chatHistoryDeserialized.MatchesExpectedValue(_chatHistory);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Rag.Chat.Core.UnitTests.Serialization
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var json = reader.ReadToEnd();
 
-            var newStream = new MemoryStream();
+            using var newStream = new MemoryStream();
             stream.Seek(0, SeekOrigin.Begin);
             stream.CopyTo(newStream);
             newStream.Seek(0, SeekOrigin.Begin);
@@ -73,22 +73,7 @@ namespace Rag.Chat.Core.UnitTests.Serialization
             // Assert
             chatHistoryDeserialized.Should().NotBeNull();
 
-            ValidateChatHistory(chatHistoryDeserialized);
-        }
-
-        private void ValidateChatHistory(ChatHistory chatHistory)
-        {
-            chatHistory.Count.Should().Be(_chatHistory.Count);
-            for (var i = 0; i < chatHistory.Count; i++)
-            {
-                chatHistory[i].Role.Label.Should().Be(_chatHistory[i].Role.Label);
-                chatHistory[i].Content.Should().Be(_chatHistory[i].Content);
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                chatHistory[i].AuthorName.Should().Be(_chatHistory[i].AuthorName);
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                chatHistory[i].Items.Count.Should().Be(_chatHistory[i].Items.Count);
-                chatHistory[i].Items.OfType<TextContent>().Single().Text.Should().Be(_chatHistory[i].Items.OfType<TextContent>().Single().Text);
-            }
+            chatHistoryDeserialized.MatchesExpectedValue(_chatHistory);
         }
     }
 }

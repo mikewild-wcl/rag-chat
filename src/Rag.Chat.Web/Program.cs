@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using OllamaSharp;
 using Rag.Chat.Core.Models;
@@ -10,7 +8,6 @@ using Rag.Chat.Core.Services;
 using Rag.Chat.Core.Services.Interfaces;
 using Scalar.AspNetCore;
 using System.ComponentModel;
-using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -131,7 +128,8 @@ builder.AddAzureCosmosClient(
         {
             AllowOutOfOrderMetadataProperties = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            // TypeInfoResolver
         })
         //options.SerializerOptions = 
 

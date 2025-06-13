@@ -6,17 +6,12 @@ using System.Text.Json.Serialization;
 
 namespace Rag.Chat.Core.Serialization;
 
-// Taken/adapted from https://github.com/Azure/azure-cosmos-dotnet-v3/tree/master/Microsoft.Azure.Cosmos.Samples/Usage/SystemTextJson
-public class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
+// Adapted from https://github.com/Azure/azure-cosmos-dotnet-v3/tree/master/Microsoft.Azure.Cosmos.Samples/Usage/SystemTextJson
+public class CosmosSystemTextJsonSerializer(
+    JsonSerializerOptions jsonSerializerOptions) : CosmosLinqSerializer
 {
-    private readonly JsonObjectSerializer systemTextJsonSerializer;
-    private readonly JsonSerializerOptions jsonSerializerOptions;
-
-    public CosmosSystemTextJsonSerializer(JsonSerializerOptions jsonSerializerOptions)
-    {
-        this.systemTextJsonSerializer = new JsonObjectSerializer(jsonSerializerOptions);
-        this.jsonSerializerOptions = jsonSerializerOptions;
-    }
+    private readonly JsonSerializerOptions _jsonSerializerOptions = jsonSerializerOptions;
+    private readonly JsonObjectSerializer _systemTextJsonSerializer = new(jsonSerializerOptions);
 
     public override T FromStream<T>(Stream stream)
     {
@@ -25,7 +20,7 @@ public class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
             if (stream.CanSeek
                    && stream.Length == 0)
             {
-                return default;
+                return default!;
             }
 
             if (typeof(Stream).IsAssignableFrom(typeof(T)))
@@ -33,14 +28,14 @@ public class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
                 return (T)(object)stream;
             }
 
-            return (T)this.systemTextJsonSerializer.Deserialize(stream, typeof(T), default);
+            return (T)_systemTextJsonSerializer.Deserialize(stream, typeof(T), default);
         }
     }
 
     public override Stream ToStream<T>(T input)
     {
-        MemoryStream streamPayload = new MemoryStream();
-        this.systemTextJsonSerializer.Serialize(streamPayload, input, input.GetType(), default);
+        MemoryStream streamPayload = new();
+        _systemTextJsonSerializer.Serialize(streamPayload, input, input.GetType(), default);
         streamPayload.Position = 0;
         return streamPayload;
     }
@@ -50,18 +45,18 @@ public class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
         JsonExtensionDataAttribute jsonExtensionDataAttribute = memberInfo.GetCustomAttribute<JsonExtensionDataAttribute>(true);
         if (jsonExtensionDataAttribute != null)
         {
-            return null;
+            return null!;
         }
 
-        JsonPropertyNameAttribute jsonPropertyNameAttribute = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>(true);
+        var jsonPropertyNameAttribute = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>(true);
         if (!string.IsNullOrEmpty(jsonPropertyNameAttribute?.Name))
         {
             return jsonPropertyNameAttribute.Name;
         }
 
-        if (this.jsonSerializerOptions.PropertyNamingPolicy != null)
+        if (_jsonSerializerOptions.PropertyNamingPolicy != null)
         {
-            return this.jsonSerializerOptions.PropertyNamingPolicy.ConvertName(memberInfo.Name);
+            return _jsonSerializerOptions.PropertyNamingPolicy.ConvertName(memberInfo.Name);
         }
 
         // Do any additional handling of JsonSerializerOptions here.

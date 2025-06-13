@@ -68,6 +68,11 @@ public class CosmosChatHistoryPersistenceService(
         {
             return null;
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving chat history for key {Key}", key);
+            return null;
+        }
     }
 
     public async Task Save(string userId, ChatHistory chatHistory)
