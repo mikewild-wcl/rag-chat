@@ -100,21 +100,6 @@ public partial class ArchitectureTests
     }
 
     [Fact]
-    public void FluentAssertions_InCurrentAssembly_ShouldNot_BeCommercialVersion()
-    {
-        var assembly = System.Reflection.Assembly
-            .GetExecutingAssembly()
-            .GetReferencedAssemblies()
-            .FirstOrDefault(a => a.Name == "FluentAssertions");
-
-        var version = typeof(FluentActions).Assembly.GetName().Version;
-        version!.Major.Should().BeLessThan(FluentAssertionsCommercialVersion);
-
-        assembly.Version.Major.Should().BeLessThan(FluentAssertionsCommercialVersion);
-
-    }
-
-    [Fact]
     public void FluentAssertions_InTestAssemblies_ShouldNot_BeCommercialVersion()
     {
         var fluentAssertionVersions = Tests.ReferencedTypes
@@ -123,46 +108,12 @@ public partial class ArchitectureTests
             //.Select(t => System.Reflection.Assembly.Load(t.FullName).GetName().Version.Major)
             .Distinct()
             .Select(ExtractVersionFromAssemblyName)
-            .Where(v => v is not null)
-            //.Should()
-            //.BeAll LLessThan(7)
-            //.ToList()
-            ;
+            .Where(v => v is not null);
 
         fluentAssertionVersions
             .Should()
             .NotContain(v => v.Major >= FluentAssertionsCommercialVersion,
                 $"because we should not use commercial version of FluentAssertions in tests. Found versions: {string.Join(", ", fluentAssertionVersions)}");
-
-        // var input = "FluentAssertions.Primitives.StringAssertions`1, FluentAssertions, Version=7.2.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a";
-        //var input = fluentAssertionAssemblies.First();
-        //var match = System.Text.RegularExpressions.Regex.Match(input, @"Version=([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)");
-        //if (match.Success)
-        //{
-        //    var version = match.Groups[1].Value; // "7.2.0.0"
-
-        //    var ver = new Version(version);
-        //    ver!.Major.Should().BeLessThan(FluentAssertionsCommercialVersion);
-        //}
-
-        //Tests.ReferencedTypes()
-        //    .Where(t => t.Assembly.FullName.StartsWith("FluentAssertions") == true)
-        //    .Select(t => t.Assembly.GetName().Version)
-        //    .Should()
-        //    .BeL
-        //    .NotBeEmpty("because we should not use commercial version of FluentAssertions in tests");
-
-        //Tests.Tha.GetReferencedAssemblies()
-        //    .Where(asm => asm.FullName.StartsWith("FluentAssertions") == true)
-        //    .Select(asm => asm.VersGet.G.GetName().Ver)
-        //    .Should()
-        //    .BeL
-        //    .NotBeEmpty("because we should not use commercial version of FluentAssertions in tests");
-
-        //var a = typeof(FluentActions).Assembly;
-        //var n = a,
-        //var version = typeof(FluentActions).Assembly.GetName().Version;
-        //version!.Major.Should().BeLessThan(FluentAssertionsCommercialVersion);
     }
 
     private static Version? ExtractVersionFromAssemblyName(string assemblyName)
@@ -170,7 +121,7 @@ public partial class ArchitectureTests
         var match = AssemblyVersionRegex()
             .Match(assemblyName);
 
-        return match.Success 
+        return match.Success
             && Version.TryParse(match.Groups[1].Value, out var version)
             ? version
             : default;
