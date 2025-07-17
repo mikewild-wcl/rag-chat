@@ -13,35 +13,35 @@ var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmos-d
 var cosmosConnection = null as IResourceBuilder<IResourceWithConnectionString>;
 var cosmosDb = null as IResourceBuilder<AzureCosmosDBResource>;
 
-if (!string.IsNullOrEmpty(cosmosConnectionString))
+if (string.IsNullOrEmpty(cosmosConnectionString))
 {
-    cosmosConnection = builder.AddConnectionString("cosmos-db");
+    //https://github.com/Azure/azure-cosmos-db-emulator-docker/issues/199
+#pragma warning disable ASPIRECOSMOSDB001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    // Remove "Preview" from the command below to use the stable version of the emulator.
+    cosmosDb = builder.AddAzureCosmosDB("cosmos-db")
+        .RunAsPreviewEmulator(emulator =>
+        {
+            emulator.WithDataVolume();
+            emulator.WithLifetime(ContainerLifetime.Persistent);
+            //emulator.WithDataExplorer();
+            //emulator.WithHealthCheck();
+            /*
+            //https://github.com/dotnet/aspire/issues/5163
+            emulator
+                .WithHttpEndpoint(51234, 1234, "explorer-port")
+                //.WithImageRegistry("mcr.microsoft.com")
+                //.WithImage("cosmosdb/linux/azure-cosmos-emulator")
+                //.WithImageTag("vnext-preview")
+                .WithArgs("--explorer-protocol", "http")
+                .WithDataVolume()
+                .WithLifetime(ContainerLifetime.Persistent);
+            */
+        });
+    //#pragma warning restore ASPIRECOSMOSDB001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }
 else
 {
-    //https://github.com/Azure/azure-cosmos-db-emulator-docker/issues/199
-    //#pragma warning disable ASPIRECOSMOSDB001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    // Remove "Preview" from the command below to use the stable version of the emulator.
-    //var cosmos = builder.AddAzureCosmosDB("cosmos-db")
-    //    .RunAsPreviewEmulator(emulator =>
-    //    {
-    //        emulator.WithDataVolume();
-    //        emulator.WithLifetime(ContainerLifetime.Persistent);
-    //        //emulator.WithDataExplorer();
-    //        //emulator.WithHealthCheck();
-    //        /*
-    //        //https://github.com/dotnet/aspire/issues/5163
-    //        emulator
-    //            .WithHttpEndpoint(51234, 1234, "explorer-port")
-    //            //.WithImageRegistry("mcr.microsoft.com")
-    //            //.WithImage("cosmosdb/linux/azure-cosmos-emulator")
-    //            //.WithImageTag("vnext-preview")
-    //            .WithArgs("--explorer-protocol", "http")
-    //            .WithDataVolume()
-    //            .WithLifetime(ContainerLifetime.Persistent);
-    //        */
-    //    });
-    //#pragma warning restore ASPIRECOSMOSDB001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    cosmosConnection = builder.AddConnectionString("cosmos-db");
 
     //https://goforgoldman.com/posts/cosmos-aspire-workaround/
     cosmosDb = builder.AddAzureCosmosDB("cosmos-db")
@@ -64,19 +64,13 @@ var embeddings = ollama.AddModel("embeddings", ollamaEmbeddingModelParameter!);
 var web = builder
     .AddProject<Rag_Chat_Web>("rag-chat-web-app")
     .WithReference(chat)
-    .WithReference(embeddings);
-
-if(cosmosConnection is not null)
-{
-    web = web.WithReference(cosmosConnection);
-}
-else if(cosmosDb is not null)
-{
-    web = web.WithReference(cosmosDb);
-}
+    .WithReference(embeddings)
+    .WithReference(cosmosConnection is not null 
+        ? cosmosConnection
+        : cosmosDb!);
 
 web
     .WaitFor(chat)
     .WaitFor(embeddings);
 
-builder.Build().Run();
+await builder.Build().RunAsync();
