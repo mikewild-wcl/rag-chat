@@ -79,3 +79,34 @@ Unit testing - https://devblogs.microsoft.com/semantic-kernel/unit-testing-with-
 See https://youtu.be/llD66wLW5GA?si=wTLQj87T5NA26r3l
 
 
+## Tests
+
+Architecture tests have been added using [https://github.com/TNG/ArchUnitNET](ArchUnitNET).
+
+See [https://www.milanjovanovic.tech/blog/shift-left-with-architecture-testing-in-dotnet](Shift Left With Architecture Testing in .NET) for an interesting article on this topic.
+
+
+## Deployment
+
+A Cosmos DB instance is required. There is a bicep file with the required resources to deploy this.
+The database will be created by the application so it isn't included in the bicep. 
+
+To deploy run the following in azure cli:
+
+If the resource group doesn't exist, create it first:
+```
+az group create --name mw-ai-rg --location "UK South"
+```
+
+You might need to set the default resource group:
+```
+az configure --defaults group="mw-ai-rg"
+```
+
+Then run the following command to deploy the bicep template:
+```
+$bicepFile = ".\deployment\bicep\cosmosdb.bicep"
+az deployment group create --name RagChatCosmosDeployment --resource-group mw-ai-rg --template-file $bicepFile --parameters databaseName=ragchat
+```
+
+
