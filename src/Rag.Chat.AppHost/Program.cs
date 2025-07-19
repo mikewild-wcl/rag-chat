@@ -13,7 +13,11 @@ var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmos-d
 var cosmosConnection = null as IResourceBuilder<IResourceWithConnectionString>;
 var cosmosDb = null as IResourceBuilder<AzureCosmosDBResource>;
 
-if (string.IsNullOrEmpty(cosmosConnectionString))
+if (!string.IsNullOrEmpty(cosmosConnectionString))
+{
+    cosmosConnection = builder.AddConnectionString("cosmos-db");
+}
+else
 {
     //https://github.com/Azure/azure-cosmos-db-emulator-docker/issues/199
 #pragma warning disable ASPIRECOSMOSDB001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -36,26 +40,24 @@ if (string.IsNullOrEmpty(cosmosConnectionString))
                 .WithDataVolume()
                 .WithLifetime(ContainerLifetime.Persistent);
             */
+
+            /*
+            //https://goforgoldman.com/posts/cosmos-aspire-workaround/
+            cosmosDb = builder.AddAzureCosmosDB("cosmos-db")
+                .WithHttpEndpoint(51234, 1234, "explorer-port") // Enable the Explorer on a custom port
+                .WithExternalHttpEndpoints()                   // Expose the ports externally
+                                                               // TECH DEBT: Workaround for Explorer dashboard not working in emulator. See: https://github.com/Azure/azure-cosmos-db-emulator-docker/issues/135.
+                .RunAsEmulator(cfgContainer =>
+                {
+                    cfgContainer
+                    .WithImageRegistry("mcr.microsoft.com")        // Set the registry
+                    .WithImage("cosmosdb/linux/azure-cosmos-emulator") // Use the emulator image
+                                                                       //.WithImageTag("vnext-preview") // Use the preview tag with the fix
+                    ;
+                });
+             */
         });
     //#pragma warning restore ASPIRECOSMOSDB001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-}
-else
-{
-    cosmosConnection = builder.AddConnectionString("cosmos-db");
-
-    //https://goforgoldman.com/posts/cosmos-aspire-workaround/
-    cosmosDb = builder.AddAzureCosmosDB("cosmos-db")
-        .WithHttpEndpoint(51234, 1234, "explorer-port") // Enable the Explorer on a custom port
-        .WithExternalHttpEndpoints()                   // Expose the ports externally
-                                                       // TECH DEBT: Workaround for Explorer dashboard not working in emulator. See: https://github.com/Azure/azure-cosmos-db-emulator-docker/issues/135.
-        .RunAsEmulator(cfgContainer =>
-        {
-            cfgContainer
-            .WithImageRegistry("mcr.microsoft.com")        // Set the registry
-            .WithImage("cosmosdb/linux/azure-cosmos-emulator") // Use the emulator image
-                                                               //.WithImageTag("vnext-preview") // Use the preview tag with the fix
-            ;
-        });
 }
 
 var chat = ollama.AddModel("chat", ollamaModelParameter!);
@@ -65,7 +67,7 @@ var web = builder
     .AddProject<Rag_Chat_Web>("rag-chat-web-app")
     .WithReference(chat)
     .WithReference(embeddings)
-    .WithReference(cosmosConnection is not null 
+    .WithReference(cosmosConnection is not null
         ? cosmosConnection
         : cosmosDb!);
 

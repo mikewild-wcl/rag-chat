@@ -69,11 +69,13 @@ See https://devblogs.microsoft.com/dotnet/dotnet9-openapi/ for details on the ho
 
 Unit testing - https://devblogs.microsoft.com/semantic-kernel/unit-testing-with-semantic-kernel/
 
+
 ## Links
 
 - Interesting article on authenticated vs unauthenticated chatbots - https://www.linkedin.com/pulse/understanding-authenticated-unauthenticated-apis-using-microsoft-rajendra/
 - SQL Server vector showcase - https://github.com/marcominerva/SqlDatabaseVectorSearch
-
+ 
+ 
 ## Telemetry
 
 See https://youtu.be/llD66wLW5GA?si=wTLQj87T5NA26r3l
@@ -98,7 +100,8 @@ If the resource group doesn't exist, create it first:
 az group create --name mw-ai-rg --location "UK South"
 ```
 
-You might need to set the default resource group:
+You might need to set the default resource group, 
+to avoid the need for adding `--resource-group <resource-group>` to commands:
 ```
 az configure --defaults group="mw-ai-rg"
 ```
@@ -106,7 +109,11 @@ az configure --defaults group="mw-ai-rg"
 Then run the following command to deploy the bicep template:
 ```
 $bicepFile = ".\deployment\bicep\cosmosdb.bicep"
-az deployment group create --name RagChatCosmosDeployment --resource-group mw-ai-rg --template-file $bicepFile --parameters databaseName=ragchat
+az deployment group create --name RagChatCosmosDeployment --template-file $bicepFile --parameters databaseName=ragchat
 ```
 
-
+To get the Cosmos keys or connection strings use one of these commands:
+```
+az cosmosdb keys list --name cosmos-db-mw-ai
+az cosmosdb keys list --name cosmos-db-mw-ai --type connection-strings
+```
