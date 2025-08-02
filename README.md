@@ -81,6 +81,20 @@ Unit testing - https://devblogs.microsoft.com/semantic-kernel/unit-testing-with-
 See https://youtu.be/llD66wLW5GA?si=wTLQj87T5NA26r3l
 
 
+## Aspire shared resources
+
+See this video for details on how to set up a shared constants project: https://youtu.be/Jt39GzYCRgo?si=LWn-7T3Tbeq7qsiS
+
+To use the constants in the Aspire AppHost project add a reference to the shared project 
+then add attributes to the project references:
+```xml
+``` 
+    <ProjectReference Include="..\Rag.Chat.Aspire.Shared\Rag.Chat.Aspire.Shared.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\Rag.Chat.Web\Rag.Chat.Web.csproj" AspireProjectMetadataTypeName="Website" />
+```
+A project with ID '54eaf71d-3b4e-4b44-a8be-34861d869918' was not found.
+Parameter name: projectIds
+
 ## Tests
 
 Architecture tests have been added using [https://github.com/TNG/ArchUnitNET](ArchUnitNET).

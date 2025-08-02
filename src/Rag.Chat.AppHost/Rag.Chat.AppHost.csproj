@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.1" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.4.0" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,13 +12,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.1" />
-    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="9.3.1" />
-    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="9.6.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.4.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="9.4.0" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="9.7.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rag.Chat.Aspire.Shared\Rag.Chat.Aspire.Shared.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\Rag.Chat.Web\Rag.Chat.Web.csproj" />
+  <!--AspireProjectMetadataTypeName="Website"-->
   </ItemGroup>
 
 </Project>

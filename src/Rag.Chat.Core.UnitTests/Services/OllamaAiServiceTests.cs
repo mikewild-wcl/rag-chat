@@ -27,7 +27,7 @@ public class OllamaAiServiceTests
     {
         // Arrange
         var mockChatHistoryPersistenceService = new Mock<IChatHistoryPersistenceService>();
-        var kernel = Kernel.CreateBuilder().Build(); 
+        var kernel = Kernel.CreateBuilder().Build();
         var service = AiServiceBuilder.Build(
             kernel,
             mockChatHistoryPersistenceService.Object);
@@ -121,7 +121,7 @@ public class OllamaAiServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        ChatHistory chatHistory = [new ChatMessageContent {  Role = AuthorRole .Developer, Content = "test" }];
+        ChatHistory chatHistory = [new ChatMessageContent { Role = AuthorRole.Developer, Content = "test" }];
 
         var mockChatHistoryPersistenceService = new Mock<IChatHistoryPersistenceService>();
         mockChatHistoryPersistenceService
@@ -155,7 +155,7 @@ public class OllamaAiServiceTests
         };
 
         // Act
-        await foreach (var _ in service.StreamingQuery(input)); //loop and discard results
+        await foreach (var _ in service.StreamingQuery(input)) ; //loop and discard results
 
         // Assert
         mockChatHistoryPersistenceService.Verify(
@@ -163,7 +163,7 @@ public class OllamaAiServiceTests
             Times.Once);
         mockChatHistoryPersistenceService.Verify(
             x => x.Save(
-                userId.ToString(), 
+                userId.ToString(),
                 It.Is<ChatHistory>(x => x != null)),
             Times.Once);
     }

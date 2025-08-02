@@ -9,7 +9,7 @@ namespace Rag.Chat.Core.UnitTests.Builders;
 public class AiServiceBuilder
 {
     private const string DefaultApiKey = "TEST_API_KEY";
-    private const string DefaultBaseUri = "https://test.connect.tlevels.gov.uk/";
+    private const string DefaultBaseUri = "https://test.connect.co.uk/";
     private const string DefaultModelName = "test_model";
     private const string DefaultServiceType = "Ollama";
     private const int DefaultTimeout = 30;

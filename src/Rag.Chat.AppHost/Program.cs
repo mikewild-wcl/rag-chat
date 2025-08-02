@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Configuration;
-using Projects;
+using Rag.Chat.Aspire.Shared;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -9,20 +9,20 @@ var ollamaEmbeddingModelParameter = builder.Configuration[$"parameters:OllamaEmb
 var ollama = builder.AddOllama("ollama")
     .WithDataVolume();
 
-var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmos-db")!;
+var cosmosConnectionString = builder.Configuration.GetConnectionString(Keys.CosmosDbResourceKey)!;
 var cosmosConnection = null as IResourceBuilder<IResourceWithConnectionString>;
 var cosmosDb = null as IResourceBuilder<AzureCosmosDBResource>;
 
 if (!string.IsNullOrEmpty(cosmosConnectionString))
 {
-    cosmosConnection = builder.AddConnectionString("cosmos-db");
+    cosmosConnection = builder.AddConnectionString(Keys.CosmosDbResourceKey);
 }
 else
 {
     //https://github.com/Azure/azure-cosmos-db-emulator-docker/issues/199
 #pragma warning disable ASPIRECOSMOSDB001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     // Remove "Preview" from the command below to use the stable version of the emulator.
-    cosmosDb = builder.AddAzureCosmosDB("cosmos-db")
+    cosmosDb = builder.AddAzureCosmosDB(Keys.CosmosDbResourceKey)
         .RunAsPreviewEmulator(emulator =>
         {
             emulator.WithDataVolume();
@@ -43,7 +43,7 @@ else
 
             /*
             //https://goforgoldman.com/posts/cosmos-aspire-workaround/
-            cosmosDb = builder.AddAzureCosmosDB("cosmos-db")
+            cosmosDb = builder.AddAzureCosmosDB(Keys.CosmosDbResourceKey)
                 .WithHttpEndpoint(51234, 1234, "explorer-port") // Enable the Explorer on a custom port
                 .WithExternalHttpEndpoints()                   // Expose the ports externally
                                                                // TECH DEBT: Workaround for Explorer dashboard not working in emulator. See: https://github.com/Azure/azure-cosmos-db-emulator-docker/issues/135.
@@ -60,11 +60,11 @@ else
     //#pragma warning restore ASPIRECOSMOSDB001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }
 
-var chat = ollama.AddModel("chat", ollamaModelParameter!);
-var embeddings = ollama.AddModel("embeddings", ollamaEmbeddingModelParameter!);
+var chat = ollama.AddModel(Keys.OllamaClientKey, ollamaModelParameter!);
+var embeddings = ollama.AddModel(Keys.OllamaEmbeddingClientKey, ollamaEmbeddingModelParameter!);
 
 var web = builder
-    .AddProject<Rag_Chat_Web>("rag-chat-web-app")
+    .AddProject<Projects.Rag_Chat_Web>(Services.WebApp)
     .WithReference(chat)
     .WithReference(embeddings)
     .WithReference(cosmosConnection is not null

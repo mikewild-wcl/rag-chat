@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.SemanticKernel;
 using OllamaSharp;
+using Rag.Chat.Aspire.Shared;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Serialization;
 using Rag.Chat.Core.Services;
@@ -40,12 +41,12 @@ builder.Services
 builder.Services.AddRazorPages();
 
 //TODO: Look into Semantic Kernel here - https://devblogs.microsoft.com/semantic-kernel/introducing-new-ollama-connector-for-local-models/
-//builder.AddOllamaApiClient("chat")
+//builder.AddOllamaApiClient(Keys.OllamaModelKey)
 //    .AddChatClient()
 //    .UseFunctionInvocation()
 //    .UseOpenTelemetry(configure: c =>
 //        c.EnableSensitiveData = builder.Environment.IsDevelopment());
-//builder.AddOllamaApiClient("embeddings")
+//builder.AddOllamaApiClient(Keys.OllamaEmbeddingClientKey)
 //    .AddEmbeddingGenerator();
 
 
@@ -54,10 +55,10 @@ builder.Services.AddRazorPages();
 //https://bartwullems.blogspot.com/2024/10/semantic-kernelgiving-new-ollama.html
 
 //Add keyed Ollama clients
-builder.AddKeyedOllamaApiClient("chat");
-builder.AddKeyedOllamaApiClient("embeddings");
+builder.AddKeyedOllamaApiClient(Keys.OllamaClientKey);
+builder.AddKeyedOllamaApiClient(Keys.OllamaEmbeddingClientKey);
 
-//builder.Services.AddKeyedSingleton<OllamaApiClient>("chat", (serviceProvider, _) =>
+//builder.Services.AddKeyedSingleton<OllamaApiClient>(Keys.OllamaModelKey, (serviceProvider, _) =>
 /*
 builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
 {
@@ -70,8 +71,8 @@ var kernelBuilder = builder.Services.AddKernel();
 
 #pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 kernelBuilder
-    .AddOllamaChatCompletion(serviceId: "chat")
-    .AddOllamaEmbeddingGenerator(serviceId: "embedding");
+    .AddOllamaChatCompletion(serviceId: Keys.OllamaModelKey)
+    .AddOllamaEmbeddingGenerator(serviceId: Keys.OllamaEmbeddingClientKey);
 #pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 Kernel kernel = kernelBuilder
@@ -82,17 +83,15 @@ builder.Services.AddKeyedTransient(Constants.OllamaKernelKey, (sp, key) =>
 {
     var kernelBuilder = Kernel.CreateBuilder();
 
-    //TODO: Add keys to Constants class
-
     //Workaround for errors with IOllamaApiClient etc - create as keyed services above
     // and cast here.
     // Inspired by https://github.com/microsoft/semantic-kernel/issues/10532
-    var embeddingClient = sp.GetKeyedService<IOllamaApiClient>("embeddings") as OllamaApiClient;
-    var chatClient = sp.GetKeyedService<IOllamaApiClient>("chat") as OllamaApiClient;
+    var embeddingClient = sp.GetKeyedService<IOllamaApiClient>(Keys.OllamaEmbeddingClientKey) as OllamaApiClient;
+    var chatClient = sp.GetKeyedService<IOllamaApiClient>(Keys.OllamaClientKey) as OllamaApiClient;
 #pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     kernelBuilder
-        .AddOllamaChatCompletion(ollamaClient: chatClient, serviceId: "chat")
-        .AddOllamaEmbeddingGenerator(serviceId: "embedding");
+        .AddOllamaChatCompletion(ollamaClient: chatClient, serviceId: Keys.OllamaClientKey)
+        .AddOllamaEmbeddingGenerator(ollamaClient: embeddingClient, serviceId: Keys.OllamaEmbeddingClientKey);
 #pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     return kernelBuilder.Build();
@@ -121,10 +120,10 @@ JsonSerializerOptions options = new()
 //};
 
 builder.AddAzureCosmosClient(
-    connectionName: "cosmos-db", 
+    connectionName: Keys.CosmosDbResourceKey, 
     configureClientOptions: (options) =>
         // options.ConnectionMode = ConnectionMode.Direct,
-        options.Serializer = new CosmosSystemTextJsonSerializer(new JsonSerializerOptions
+       options.Serializer = new CosmosSystemTextJsonSerializer(new JsonSerializerOptions
         {
             AllowOutOfOrderMetadataProperties = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -199,13 +198,10 @@ app.MapPost("/api/chat",
     .WithTags("Chat");
 
 app.MapPost("/api/chat-stream",
-    (
-        [Description("Chat prompt message with streamed response.")]
-        [FromBody] ChatMessage message,
-        IAiService aiService) =>
-    {
-        return PostChatPrompt(message with { UserId = GetCurrentUserId() }, aiService);
-    })
+    ([Description("Chat prompt message with streamed response.")]
+     [FromBody] ChatMessage message,
+     IAiService aiService) =>
+        PostChatPrompt(message with { UserId = GetCurrentUserId() }, aiService))
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a chat message.")
     .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")

@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
 		..\.github\copilot-instructions.md = ..\.github\copilot-instructions.md
+		Rag.Chat.ServiceDefaults\Extensions.cs = Rag.Chat.ServiceDefaults\Extensions.cs
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
@@ -32,6 +33,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bicep", "bicep", "{907CF51D
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deployment", "deployment", "{C5352D51-87AE-48CD-934E-916CCDA4DB80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rag.Chat.Aspire.Shared", "Rag.Chat.Aspire.Shared\Rag.Chat.Aspire.Shared.csproj", "{2A623A13-D8B4-4E79-ADE5-DDD35A97FAFE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +66,10 @@ Global
 		{351CF92D-4EC9-4A82-9E34-328DBCB0C352}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{351CF92D-4EC9-4A82-9E34-328DBCB0C352}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{351CF92D-4EC9-4A82-9E34-328DBCB0C352}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A623A13-D8B4-4E79-ADE5-DDD35A97FAFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A623A13-D8B4-4E79-ADE5-DDD35A97FAFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A623A13-D8B4-4E79-ADE5-DDD35A97FAFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A623A13-D8B4-4E79-ADE5-DDD35A97FAFE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,6 +81,7 @@ Global
 		{351CF92D-4EC9-4A82-9E34-328DBCB0C352} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{907CF51D-6049-4452-931D-12BF199A55FC} = {C5352D51-87AE-48CD-934E-916CCDA4DB80}
 		{C5352D51-87AE-48CD-934E-916CCDA4DB80} = {8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}
+		{2A623A13-D8B4-4E79-ADE5-DDD35A97FAFE} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B7793889-6840-4ACD-BBDF-C65F8FC99A52}

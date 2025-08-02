@@ -7,17 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="9.3.1" />
-	  <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="9.6.0" />
-	  <PackageReference Include="CommunityToolkit.Aspire.Microsoft.EntityFrameworkCore.Sqlite" Version="9.6.0" />
-	  <PackageReference Include="Microsoft.Extensions.AI" Version="9.7.0" />
+	  <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="9.4.0" />
+	  <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="9.7.0" />
+	  <PackageReference Include="CommunityToolkit.Aspire.Microsoft.EntityFrameworkCore.Sqlite" Version="9.7.0" />
+	  <PackageReference Include="Microsoft.Extensions.AI" Version="9.7.1" />
 	  <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.56.0-alpha" />
-	  <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.60.0" />
+	  <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.61.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.6.1" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.6.6" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rag.Chat.Aspire.Shared\Rag.Chat.Aspire.Shared.csproj" />
     <ProjectReference Include="..\Rag.Chat.Core\Rag.Chat.Core.csproj" />
     <ProjectReference Include="..\Rag.Chat.ServiceDefaults\Rag.Chat.ServiceDefaults.csproj" />
   </ItemGroup>

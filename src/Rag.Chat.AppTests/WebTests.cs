@@ -1,3 +1,5 @@
+using Rag.Chat.Aspire.Shared;
+
 namespace Rag.Chat.AppTests.Tests;
 
 public class WebTests
@@ -19,9 +21,9 @@ public class WebTests
         await app.StartAsync(TestContext.Current.CancellationToken);
 
         // Act
-        var httpClient = app.CreateHttpClient("rag-chat-web-app");
+        var httpClient = app.CreateHttpClient(Services.WebApp);
         await resourceNotificationService
-            .WaitForResourceAsync("rag-chat-web-app", KnownResourceStates.Running, TestContext.Current.CancellationToken)
+            .WaitForResourceAsync(Services.WebApp, KnownResourceStates.Running, TestContext.Current.CancellationToken)
             .WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
 
         var response = await httpClient.GetAsync("/", TestContext.Current.CancellationToken);
