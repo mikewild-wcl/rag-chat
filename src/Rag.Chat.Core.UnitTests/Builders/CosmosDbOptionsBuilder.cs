@@ -2,7 +2,7 @@
 
 namespace Rag.Chat.Core.UnitTests.Builders;
 
-public class CosmosDbOptionsBuilder
+public static class CosmosDbOptionsBuilder
 {
     private const string DefaultDatabaseName = "CosmosTestDatabase";
     private const string DefaultContainerName = "CosmosContainer";

@@ -10,5 +10,7 @@ public record AiServiceOptions
 
     public required string ServiceType { get; init; }
 
+    public required int MessageDelayInMilliseconds { get; init; }
+
     public int Timeout { get; init; }
 }

@@ -1,31 +1,33 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Rag.Chat.Core.Models;
 using Rag.Chat.Core.Services;
+using Rag.Chat.Core.UnitTests.Builders;
 
 namespace Rag.Chat.Core.UnitTests.Services;
 
 public class DummyAiServiceTests
 {
     [Fact]
-    public async Task ClearChat_Should_Clear_Conversation()
+    public void ClearChat_Should_Clear_Conversation()
     {
         // Arrange
-        var service = new DummyAiService(new NullLogger<DummyAiService>());
+        var service = AiServiceBuilder.BuildDummyService();
 
         var userId = Guid.NewGuid();
 
         // Act
-        await service.ClearChat(userId);
+        var taskResult = service.ClearChat(userId);
 
         // Assert
-        // No assertion - this is a dummy call with no result
+        taskResult.Should().Be(Task.CompletedTask);
     }
 
     [Fact]
     public async Task Query_Should_Return_HardCoded_Response()
     {
         // Arrange
-        var service = new DummyAiService(new NullLogger<DummyAiService>());
+        var service = AiServiceBuilder.BuildDummyService();
         var message = new ChatMessage("Hello");
 
         // Act
@@ -39,10 +41,12 @@ public class DummyAiServiceTests
     public async Task StreamingQuery_Should_Return_Expected_Tokens()
     {
         // Arrange
-        var service = new DummyAiService(new NullLogger<DummyAiService>())
-        {
-            DelayBetweenMessages = 0 // Set to 0 for faster testing
-        };
+        var options = AiServiceOptionsBuilder
+            .Build(messageDelayInMilliseconds: 0);// Set to 0 for faster testing
+
+        var service = new DummyAiService(
+             Options.Create(options),
+             new NullLogger<DummyAiService>());
 
         var message = new ChatMessage("Hello");
 
@@ -54,14 +58,18 @@ public class DummyAiServiceTests
         }
 
         // Assert
-        tokens.Should().BeEquivalentTo(
-        [
+        tokens.Should().BeEquivalentTo(new List<string>
+        {
             "This",
             " is a",
             " hard-coded",
             " streaming response",
             " from",
-            " the AI service.\n"
-        ]);
+            " the AI service.\n",
+            "\n",
+            " And here is",
+            " another",
+            " paragraph.\n",
+        });
     }
 }

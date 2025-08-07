@@ -155,7 +155,7 @@ public class OllamaAiServiceTests
         };
 
         // Act
-        await foreach (var _ in service.StreamingQuery(input)) ; //loop and discard results
+        await foreach (var _ in service.StreamingQuery(input)); //loop and discard results
 
         // Assert
         mockChatHistoryPersistenceService.Verify(

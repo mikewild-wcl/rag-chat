@@ -1,6 +1,6 @@
 using Rag.Chat.Aspire.Shared;
 
-namespace Rag.Chat.AppTests.Tests;
+namespace Rag.Chat.AppTests;
 
 public class WebTests
 {
@@ -8,7 +8,10 @@ public class WebTests
     public async Task GetWebResourceRoot_Returns_OkStatusCode()
     {
         // Arrange
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Rag_Chat_AppHost>();
+        var appHost = await DistributedApplicationTestingBuilder
+            .CreateAsync<Projects.Rag_Chat_AppHost>(
+            TestContext.Current.CancellationToken);
+
         appHost.Services.ConfigureHttpClientDefaults(clientBuilder =>
         {
             clientBuilder.AddStandardResilienceHandler();
@@ -16,7 +19,7 @@ public class WebTests
 
         // To output logs to the xUnit.net ITestOutputHelper, consider adding a package from https://www.nuget.org/packages?q=xunit+logging
 
-        await using var app = await appHost.BuildAsync();
+        await using var app = await appHost.BuildAsync(TestContext.Current.CancellationToken);
         var resourceNotificationService = app.Services.GetRequiredService<ResourceNotificationService>();
         await app.StartAsync(TestContext.Current.CancellationToken);
 

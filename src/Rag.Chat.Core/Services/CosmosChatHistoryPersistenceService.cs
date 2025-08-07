@@ -35,7 +35,7 @@ public class CosmosChatHistoryPersistenceService(
         }
     }
 
-    public async Task<ChatHistory?> Retrieve(string key)
+    public async Task<ChatHistory?> Retrieve(string userId)
     {
         try
         {
@@ -55,7 +55,7 @@ public class CosmosChatHistoryPersistenceService(
               https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism
                 [JsonDerivedType(typeof(WeatherForecastWithCity))]
              */
-            var response = await container.ReadItemAsync<UserChatHistoryContainer>(key, new PartitionKey(key));
+            var response = await container.ReadItemAsync<UserChatHistoryContainer>(userId, new PartitionKey(userId));
 
             if (response.Resource is null)
             {
@@ -70,7 +70,7 @@ public class CosmosChatHistoryPersistenceService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving chat history for key {Key}", key);
+            _logger.LogError(ex, "Error occurred while retrieving chat history for key {Key}", userId);
             return null;
         }
     }
