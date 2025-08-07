@@ -220,7 +220,7 @@ app.MapDelete("/api/clear-chat",
     .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
     .WithTags("Chat");
 
-app.Run();
+await app.RunAsync();
 
 static async IAsyncEnumerable<TokenizedResponse> PostChatPrompt(
     ChatMessage prompt,
