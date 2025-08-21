@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel;
 using OllamaSharp;
 using Rag.Chat.Aspire.Shared;
@@ -9,6 +12,7 @@ using Rag.Chat.Core.Services;
 using Rag.Chat.Core.Services.Interfaces;
 using Scalar.AspNetCore;
 using System.ComponentModel;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -24,6 +28,79 @@ builder.Services
     .Configure<CosmosDbOptions>(builder.Configuration.GetSection(nameof(CosmosDbOptions)));
 
 var aiServiceType = builder.Configuration.GetSection(nameof(AiServiceOptions)).GetValue<string>("ServiceType");
+
+//builder.Services.AddAuthentication().AddGoogle(googleOptions =>
+//{
+////    //var clientId = builder.Configuration["Authentication:Google:ClientId"];
+////    //var clienSecretd = builder.Configuration["Authentication:Google:ClientSecret"];
+//    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+//    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+//})
+//.AddCookie(setup => setup.ExpireTimeSpan = TimeSpan.FromMinutes(30))
+////.AddOpenIdConnect(options =>
+////{
+////    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+////})
+//;
+
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    options.CallbackPath = "/signin-google";
+    options.Events.OnCreatingTicket = ctx =>
+    {
+        var identity = (ClaimsIdentity)ctx.Principal.Identity;
+        var email = ctx.User.GetProperty("email").GetString();
+        var name = ctx.User.GetProperty("name").GetString();
+        //var id = ctx.User.GetProperty("sub").GetString();
+        try
+        {
+            var id = ctx.User.GetProperty("sub").GetString();
+            if (id is not null)
+            {
+                identity.AddClaim(new Claim("sub", id));
+            }
+        }
+        catch { }
+        //try
+        //{
+        //    var sid = ctx.User.GetProperty("sid").GetString();
+        //}
+        //catch { }
+        //try
+        //{
+        //    var id = ctx.User.GetProperty("id").GetString();
+        //}
+        //catch { }
+
+        // Add claims
+        //identity.AddClaim(new Claim(ClaimTypes.Email, email));
+        //identity.AddClaim(new Claim(ClaimTypes.Name, name));
+        return Task.CompletedTask;
+    };
+});
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
+
+builder.Services.AddAuthorization(options =>
+{
+    // By default, all incoming requests will be authorized according to the default policy.
+    options.FallbackPolicy = options.DefaultPolicy;
+});
 
 var rateLimitOptions = new RateLimitOptions();
 builder.Configuration.GetSection(RateLimitOptions.RateLimit).Bind(rateLimitOptions);
@@ -200,8 +277,9 @@ app.MapPost("/api/chat",
 app.MapPost("/api/chat-stream",
     ([Description("Chat prompt message with streamed response.")]
      [FromBody] ChatMessage message,
+     HttpContext context,
      IAiService aiService) =>
-        PostChatPrompt(message with { UserId = GetCurrentUserId() }, aiService))
+        PostChatPrompt(message with { UserId = GetCurrentUserId(context) }, aiService))
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a chat message.")
     .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
@@ -232,8 +310,18 @@ static async IAsyncEnumerable<TokenizedResponse> PostChatPrompt(
     }
 }
 
-Guid GetCurrentUserId()
+// TODO: Movwe to a claims or identity extension method
+string? GetCurrentUserId(HttpContext? context = null)
 {
-    // TODO: Get user from auth
-    return new Guid("562ff504-e8c5-4408-a7e8-84ec6bea2e40");
+    var identity = context?.User?.Identity as ClaimsIdentity;
+    if (identity is { IsAuthenticated: true })
+    {
+        var id = identity.Claims.SingleOrDefault(claim => claim.Type == "sub");
+        if(id is not null)
+        {
+            return id.Value;
+        }
+    }
+
+    return null;
 }

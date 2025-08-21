@@ -57,8 +57,9 @@ public class CosmosChatHistoryPersistenceServiceTests
     public async Task Retrieve_Should_Return_ChatHistory_When_Exists()
     {
         // Arrange
+        const string userId = "test-user";
+
         var service = CreateService();
-        var userId = "test-user";
         var chatHistory = new ChatHistory();
         var userChatHistory = new UserChatHistoryContainer(userId, userId, chatHistory);
 
@@ -81,8 +82,9 @@ public class CosmosChatHistoryPersistenceServiceTests
     public async Task Retrieve_Should_Return_Null_When_Not_Found()
     {
         // Arrange
+        const string userId = "nonexistent-user";
+
         var service = CreateService();
-        var userId = "nonexistent-user";
 
         _mockContainer
             .Setup(c => c.ReadItemAsync<UserChatHistoryContainer>(userId, new PartitionKey(userId), null, default))
@@ -99,8 +101,9 @@ public class CosmosChatHistoryPersistenceServiceTests
     public async Task Save_Should_Upsert_ChatHistory()
     {
         // Arrange
+        const string userId = "test-user";
+
         var service = CreateService();
-        var userId = "test-user";
         var chatHistory = new ChatHistory();
         var userChatHistory = new UserChatHistoryContainer(userId, userId, chatHistory);
 
@@ -124,7 +127,8 @@ public class CosmosChatHistoryPersistenceServiceTests
     {
         // Arrange
         var service = CreateService();
-        var userId = "test-user";
+
+        const string userId = "test-user";
 
         var itemResponse = new Mock<ItemResponse<UserChatHistoryContainer>>();
         itemResponse.Setup(r => r.StatusCode).Returns(HttpStatusCode.NoContent);

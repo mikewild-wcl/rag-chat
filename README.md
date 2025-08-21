@@ -70,6 +70,11 @@ See https://devblogs.microsoft.com/dotnet/dotnet9-openapi/ for details on the ho
 Unit testing - https://devblogs.microsoft.com/semantic-kernel/unit-testing-with-semantic-kernel/
 
 
+## Authentication
+
+Authentication is implemented using Google authentication. See https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/google-logins?view=aspnetcore-9.0
+
+
 ## Links
 
 - Interesting article on authenticated vs unauthenticated chatbots - https://www.linkedin.com/pulse/understanding-authenticated-unauthenticated-apis-using-microsoft-rajendra/
@@ -89,11 +94,9 @@ To use the constants in the Aspire AppHost project add a reference to the shared
 then add attributes to the project references:
 ```xml
 ``` 
-    <ProjectReference Include="..\Rag.Chat.Aspire.Shared\Rag.Chat.Aspire.Shared.csproj" IsAspireProjectResource="false" />
-    <ProjectReference Include="..\Rag.Chat.Web\Rag.Chat.Web.csproj" AspireProjectMetadataTypeName="Website" />
+  <ProjectReference Include="..\Rag.Chat.Aspire.Shared\Rag.Chat.Aspire.Shared.csproj" IsAspireProjectResource="false" />
+  <ProjectReference Include="..\Rag.Chat.Web\Rag.Chat.Web.csproj" AspireProjectMetadataTypeName="Website" />
 ```
-A project with ID '54eaf71d-3b4e-4b44-a8be-34861d869918' was not found.
-Parameter name: projectIds
 
 ## Tests
 

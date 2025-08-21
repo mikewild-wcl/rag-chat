@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/Aspire/">
+    <Project Path="Rag.Chat.AppHost/Rag.Chat.AppHost.csproj" />
+    <Project Path="Rag.Chat.Aspire.Shared/Rag.Chat.Aspire.Shared.csproj" />
+    <Project Path="Rag.Chat.ServiceDefaults/Rag.Chat.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../.github/copilot-instructions.md" />
+    <File Path="../.gitignore" />
+    <File Path="../README.md" />
+    <File Path="Rag.Chat.ServiceDefaults/Extensions.cs" />
+  </Folder>
+  <Folder Name="/Solution Items/deployment/" />
+  <Folder Name="/Solution Items/deployment/bicep/">
+    <File Path="../deployment/bicep/cosmosdb.bicep" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Rag.Chat.AppTests/Rag.Chat.AppTests.csproj" />
+    <Project Path="Rag.Chat.Core.UnitTests/Rag.Chat.Core.UnitTests.csproj" />
+  </Folder>
+  <Project Path="Rag.Chat.Core/Rag.Chat.Core.csproj" />
+  <Project Path="Rag.Chat.Web/Rag.Chat.Web.csproj" />
+</Solution>

@@ -8,5 +8,5 @@ public interface IAiService
 
     IAsyncEnumerable<TokenizedResponse> StreamingQuery(ChatMessage message);
     
-    Task ClearChat(Guid? userId);
+    Task ClearChat(string? userId);
 }

@@ -26,13 +26,13 @@ public class OllamaAiServiceTests
     public async Task ClearChat_Should_Clear_Conversation()
     {
         // Arrange
+        var userId = Guid.NewGuid().ToString();
+
         var mockChatHistoryPersistenceService = new Mock<IChatHistoryPersistenceService>();
         var kernel = Kernel.CreateBuilder().Build();
         var service = AiServiceBuilder.Build(
             kernel,
             mockChatHistoryPersistenceService.Object);
-
-        var userId = Guid.NewGuid();
 
         // Act
         await service.ClearChat(userId);
@@ -120,7 +120,7 @@ public class OllamaAiServiceTests
     public async Task StreamingQuery_Should_Persist_Chat_History()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.NewGuid().ToString();
         ChatHistory chatHistory = [new ChatMessageContent { Role = AuthorRole.Developer, Content = "test" }];
 
         var mockChatHistoryPersistenceService = new Mock<IChatHistoryPersistenceService>();
@@ -155,7 +155,9 @@ public class OllamaAiServiceTests
         };
 
         // Act
+#pragma warning disable S1116 // Empty statements should be removed
         await foreach (var _ in service.StreamingQuery(input)); //loop and discard results
+#pragma warning restore S1116 // Empty statements should be removed
 
         // Assert
         mockChatHistoryPersistenceService.Verify(

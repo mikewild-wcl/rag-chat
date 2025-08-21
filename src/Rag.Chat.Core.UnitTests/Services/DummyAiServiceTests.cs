@@ -12,9 +12,9 @@ public class DummyAiServiceTests
     public void ClearChat_Should_Clear_Conversation()
     {
         // Arrange
-        var service = AiServiceBuilder.BuildDummyService();
+        const string userId = "User123";
 
-        var userId = Guid.NewGuid();
+        var service = AiServiceBuilder.BuildDummyService();
 
         // Act
         var taskResult = service.ClearChat(userId);

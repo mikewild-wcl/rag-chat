@@ -54,9 +54,10 @@ public class InMemoryChatHistoryPersistenceServiceTests
     public async Task Remove_Should_Delete_ChatHistory()
     {
         // Arrange
+        const string userId = "test-user";
+
         var service = new InMemoryChatHistoryPersistenceService();
         var chatHistory = new ChatHistory();
-        var userId = "test-user";
 
         await service.Save(userId, chatHistory);
 
@@ -72,9 +73,9 @@ public class InMemoryChatHistoryPersistenceServiceTests
     public async Task Remove_Should_Not_Throw_Exception_When_Key_Does_Not_Exist()
     {
         // Arrange
+        const string userId = "test-user";
+
         var service = new InMemoryChatHistoryPersistenceService();
-        var chatHistory = new ChatHistory();
-        var userId = "test-user";
 
         // Act
         await service.Remove(userId);

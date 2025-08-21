@@ -12,10 +12,9 @@ public class DummyAiService(
     private readonly AiServiceOptions _options = options.Value;
     private readonly ILogger<DummyAiService> _logger = logger;
 
-    public Task ClearChat(Guid? userId)
-    {
-        // No operation for the dummy service
-        return Task.CompletedTask;
+    public Task ClearChat(string? userId)
+    {        
+        return Task.CompletedTask; // No operation for the dummy service
     }
 
     public Task<string> Query(ChatMessage message)
