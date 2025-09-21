@@ -27,44 +27,48 @@ const createChatLi = (message, className) => {
 const generateResponse = (message, chatElement) => {
     const messageElement = chatElement.querySelector("p");
 
+    const idToken = window.idToken;
+    console.log(`idToken: ${idToken}`);
+
     fetch('/api/chat', {
         method: 'POST',
         headers: {
+            'Authorization': `Bearer ${idToken}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ message: message })
     })
-        .then(response => {
-            if (response.status === 429 || response.status === 503) {
-                console.log('responded');
-                console.log('too many requests!');
-                console.log(`server responded with status ${response.status}`);
+    .then(response => {
+        if (response.status === 429 || response.status === 503) {
+            console.log('responded');
+            console.log('too many requests!');
+            console.log(`server responded with status ${response.status}`);
 
-                messageElement.textContent = 'The server is busy. Please try again later.';
-                chatbox.scrollTo(0, chatbox.scrollHeight);
-                return null;
-            //    return new Promise(function (resolve, reject) {
-            //        resolve('The server is busy. Please try again later.');
-            //    })
-            }
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            return response.json();
-        })
-        .then(data => {
-            console.log('in the data handler...' + data);                       
-            if (!data) return;
-
-            messageElement.textContent = data.response;
+            messageElement.textContent = 'The server is busy. Please try again later.';
             chatbox.scrollTo(0, chatbox.scrollHeight);
-        })
-        .catch(error => {
-            console.log('in the error handler...')
-            console.error('Error:', error)
-        });
+            return null;
+        //    return new Promise(function (resolve, reject) {
+        //        resolve('The server is busy. Please try again later.');
+        //    })
+        }
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        return response.json();
+    })
+    .then(data => {
+        console.log('in the data handler...' + data);                       
+        if (!data) return;
+
+        messageElement.textContent = data.response;
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+    })
+    .catch(error => {
+        console.log('in the error handler...')
+        console.error('Error:', error)
+    });
 }
 
 const handleChat = () => {

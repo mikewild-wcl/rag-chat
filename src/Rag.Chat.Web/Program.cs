@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel;
 using OllamaSharp;
 using Rag.Chat.Aspire.Shared;
@@ -43,7 +44,6 @@ var aiServiceType = builder.Configuration.GetSection(nameof(AiServiceOptions)).G
 ////})
 //;
 
-
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -56,6 +56,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     options.CallbackPath = "/signin-google";
+    options.SaveTokens = true;
     options.Events.OnCreatingTicket = ctx =>
     {
         var identity = (ClaimsIdentity)ctx.Principal.Identity;
@@ -87,7 +88,20 @@ builder.Services.AddAuthentication(options =>
         //identity.AddClaim(new Claim(ClaimTypes.Name, name));
         return Task.CompletedTask;
     };
+})
+.AddJwtBearer(options =>
+{
+    options.Authority = "https://accounts.google.com";
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = "https://accounts.google.com",
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Authentication:Google:ClientId"], // matches your Google client ID
+        ValidateLifetime = true
+    };
 });
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -95,12 +109,13 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
-
 builder.Services.AddAuthorization(options =>
 {
     // By default, all incoming requests will be authorized according to the default policy.
     options.FallbackPolicy = options.DefaultPolicy;
 });
+
+builder.Services.AddHttpContextAccessor();
 
 var rateLimitOptions = new RateLimitOptions();
 builder.Configuration.GetSection(RateLimitOptions.RateLimit).Bind(rateLimitOptions);
@@ -125,7 +140,6 @@ builder.Services.AddRazorPages();
 //        c.EnableSensitiveData = builder.Environment.IsDevelopment());
 //builder.AddOllamaApiClient(Keys.OllamaEmbeddingClientKey)
 //    .AddEmbeddingGenerator();
-
 
 /*********************************************************************/
 
@@ -269,6 +283,11 @@ app.MapPost("/api/chat",
             response = await aiService.Query(message with { UserId = GetCurrentUserId() })
         });
     })
+    .RequireAuthorization()
+    .RequireAuthorization(new AuthorizeAttribute
+    {
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme
+    })
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a message.")
     .WithDescription("This endpoint handles chat messages and returns a chat response.")
@@ -280,6 +299,11 @@ app.MapPost("/api/chat-stream",
      HttpContext context,
      IAiService aiService) =>
         PostChatPrompt(message with { UserId = GetCurrentUserId(context) }, aiService))
+    .RequireAuthorization()
+    .RequireAuthorization(new AuthorizeAttribute
+    {
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme
+    })
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a chat message.")
     .WithDescription("This endpoint handles chat messages and returns a streaming chat response.")
@@ -292,6 +316,11 @@ app.MapDelete("/api/clear-chat",
     {
         await aiService.ClearChat(GetCurrentUserId());
         return Results.NoContent();
+    })
+    .RequireAuthorization()
+    .RequireAuthorization(new AuthorizeAttribute
+    {
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme
     })
     .RequireRateLimiting(ApiRateLimitPolicy)
     .WithSummary("Post a chat message.")
@@ -310,7 +339,7 @@ static async IAsyncEnumerable<TokenizedResponse> PostChatPrompt(
     }
 }
 
-// TODO: Movwe to a claims or identity extension method
+// TODO: Move to a claims or identity extension method
 string? GetCurrentUserId(HttpContext? context = null)
 {
     var identity = context?.User?.Identity as ClaimsIdentity;
