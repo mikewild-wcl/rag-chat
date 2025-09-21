@@ -134,3 +134,14 @@ To get the Cosmos keys or connection strings use one of these commands:
 az cosmosdb keys list --name cosmos-db-mw-ai
 az cosmosdb keys list --name cosmos-db-mw-ai --type connection-strings
 ```
+
+
+## TODO and issues
+
+- The chat history saved to Cosmos DB (or in-memory) saves the entire chat history object. 
+  It should be changed to save only new messages as documents, then to reconstitute the whole history 
+  when required.
+- The chat history should be limited to a maximum number of messages, 
+  or a maximum token count, to avoid exceeding the model context length.
+- The front end JavaScript doesn't check for badly formed response chunks, so it sometimes throws 
+  away the last item if the chat completion stops suddenly.
